@@ -1,17 +1,17 @@
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
 import { FiCalendar, FiUsers, FiDollarSign, FiTrendingUp, FiClock } from 'react-icons/fi';
 import prisma from '@/lib/prisma';
-import { formatCurrency, getStatusLabel, getStatusColor } from '@/lib/utils';
+import { formatCurrency, getStatusLabel, getStatusColor, getVietnamNow, getVietnamToday } from '@/lib/utils';
 
 async function getStats() {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getVietnamToday();
     const [todayAppointments, totalCustomers, monthAppointments] = await Promise.all([
       prisma.appointment.count({ where: { appointmentDate: today } }),
       prisma.customer.count(),
       prisma.appointment.findMany({
-        where: { status: { in: ['COMPLETED'] }, appointmentDate: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0] } },
+        where: { status: { in: ['COMPLETED'] }, appointmentDate: { gte: (() => { const vn = getVietnamNow(); return new Date(vn.getFullYear(), vn.getMonth(), 1).toISOString().split('T')[0]; })() } },
       }),
     ]);
     const monthRevenue = monthAppointments.reduce((sum, a) => sum + a.finalAmount, 0);

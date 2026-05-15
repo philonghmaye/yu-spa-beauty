@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { addMinutesToTime } from '@/lib/utils';
+import { addMinutesToTime, getVietnamNow, getVietnamToday } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -48,10 +48,10 @@ export async function GET(request: NextRequest) {
       return { time, available: false };
     }
 
-    // Check for today: don't show past time slots
-    const today = new Date().toISOString().split('T')[0];
+    // Check for today: don't show past time slots (using Vietnam timezone)
+    const today = getVietnamToday();
     if (date === today) {
-      const now = new Date();
+      const now = getVietnamNow();
       const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
       if (time <= currentTime) {
         return { time, available: false };

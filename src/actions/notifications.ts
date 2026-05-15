@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/prisma';
+import { getVietnamNow, getVietnamToday } from '@/lib/utils';
 import { sendZaloReminder } from '@/lib/zalo';
 
 export async function createNotification(data: {
@@ -27,12 +28,12 @@ export async function createNotification(data: {
  * Find appointments that need reminders (24h and 2h before)
  */
 export async function getPendingReminders() {
-  const now = new Date();
+  const now = getVietnamNow();
   const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   const in2h = new Date(now.getTime() + 2 * 60 * 60 * 1000);
 
-  const tomorrow = in24h.toISOString().split('T')[0];
-  const todayDate = now.toISOString().split('T')[0];
+  const tomorrow = `${in24h.getFullYear()}-${(in24h.getMonth() + 1).toString().padStart(2, '0')}-${in24h.getDate().toString().padStart(2, '0')}`;
+  const todayDate = getVietnamToday();
 
   // Get appointments for 24h reminder
   const appointments24h = await prisma.appointment.findMany({

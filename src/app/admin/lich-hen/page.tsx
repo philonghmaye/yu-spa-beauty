@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
 import { getAppointments } from '@/actions/appointments';
 import { formatCurrency, getStatusLabel, getStatusColor } from '@/lib/utils';

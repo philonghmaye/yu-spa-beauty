@@ -1,6 +1,31 @@
 import { format, parse, addMinutes, isAfter, isBefore, isEqual } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
+// Vietnam timezone offset: UTC+7
+const VIETNAM_TZ = 'Asia/Ho_Chi_Minh';
+
+/**
+ * Returns current Date object adjusted to Vietnam timezone (UTC+7).
+ * On Vercel (UTC server), new Date() returns UTC time which is 7 hours behind Vietnam.
+ * This function ensures consistent timezone behavior across all environments.
+ */
+export function getVietnamNow(): Date {
+  const now = new Date();
+  const vietnamTime = new Date(now.toLocaleString('en-US', { timeZone: VIETNAM_TZ }));
+  return vietnamTime;
+}
+
+/**
+ * Returns today's date string in Vietnam timezone (YYYY-MM-DD format).
+ */
+export function getVietnamToday(): string {
+  const vn = getVietnamNow();
+  const y = vn.getFullYear();
+  const m = (vn.getMonth() + 1).toString().padStart(2, '0');
+  const d = vn.getDate().toString().padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 }

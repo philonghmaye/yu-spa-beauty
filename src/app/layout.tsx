@@ -1,7 +1,16 @@
 import type { Metadata } from 'next';
+import { Be_Vietnam_Pro } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import Providers from '@/components/Providers';
+
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ['vietnamese', 'latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+  variable: '--font-be-vietnam',
+});
 
 export const metadata: Metadata = {
   title: 'YURI SPA BEAUTY - Dịch vụ Spa & Làm đẹp chuyên nghiệp',
@@ -11,7 +20,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi">
+    <html lang="vi" className={beVietnamPro.variable}>
       <body>
         <Providers>
           {children}

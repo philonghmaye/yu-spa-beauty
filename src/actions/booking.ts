@@ -2,7 +2,7 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { addMinutesToTime } from '@/lib/utils';
+import { addMinutesToTime, getVietnamNow } from '@/lib/utils';
 import { sendBookingConfirmation } from '@/lib/email';
 
 // ============ LOAD DATA FOR BOOKING FORM ============
@@ -170,7 +170,7 @@ export async function createBooking(data: {
       throw new Error('Mã giảm giá không hợp lệ');
     }
 
-    const now = new Date();
+    const now = getVietnamNow();
     if (now < promo.startDate || now > promo.endDate) {
       throw new Error('Mã giảm giá đã hết hạn');
     }
@@ -328,7 +328,7 @@ export async function validatePromoCode(code: string, totalAmount: number) {
     return { valid: false, error: 'Mã giảm giá không hợp lệ' };
   }
 
-  const now = new Date();
+  const now = getVietnamNow();
   if (now < promo.startDate || now > promo.endDate) {
     return { valid: false, error: 'Mã giảm giá đã hết hạn' };
   }

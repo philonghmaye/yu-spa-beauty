@@ -1,7 +1,7 @@
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
 import { getPromotions } from '@/actions/promotions';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getVietnamNow } from '@/lib/utils';
 import PromotionActions from './PromotionActions';
 
 export default async function PromotionsPage() {
@@ -9,7 +9,7 @@ export default async function PromotionsPage() {
 
   const getPromoStatus = (promo: { isActive: boolean; startDate: Date; endDate: Date; usageLimit: number | null; usedCount: number }) => {
     if (!promo.isActive) return { label: 'Đã tắt', badge: 'badge-error' };
-    const now = new Date();
+    const now = getVietnamNow();
     if (now < promo.startDate) return { label: 'Chưa bắt đầu', badge: 'badge-warning' };
     if (now > promo.endDate) return { label: 'Hết hạn', badge: 'badge-error' };
     if (promo.usageLimit && promo.usedCount >= promo.usageLimit) return { label: 'Hết lượt', badge: 'badge-error' };
@@ -27,7 +27,7 @@ export default async function PromotionsPage() {
       <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
         <span className="badge badge-success" style={{ padding: '6px 14px' }}>
           Đang hoạt động: {promotions.filter((p) => {
-            const now = new Date();
+            const now = getVietnamNow();
             return p.isActive && now >= p.startDate && now <= p.endDate && (!p.usageLimit || p.usedCount < p.usageLimit);
           }).length}
         </span>

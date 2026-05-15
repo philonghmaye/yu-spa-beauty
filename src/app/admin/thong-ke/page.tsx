@@ -1,80 +1,115 @@
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 import { FiTrendingUp, FiCalendar, FiUsers } from 'react-icons/fi';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getVietnamNow } from '@/lib/utils';
 import prisma from '@/lib/prisma';
 
 async function getStatsData() {
   try {
-    // Monthly revenue (last 6 months)
-    const monthlyData = [];
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0];
-      const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().split('T')[0];
+    // Calculate date range for last 6 months
+    const now = getVietnamNow();
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const startDate = sixMonthsAgo.toISOString().split('T')[0];
+    const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
 
-      const appointments = await prisma.appointment.findMany({
+    // 1. Single query for all completed appointments in the last 6 months
+    const [allCompletedAppointments, serviceStats, staffStats, totalRevenue, totalAppointments, totalCustomers] = await Promise.all([
+      prisma.appointment.findMany({
         where: {
           status: 'COMPLETED',
-          appointmentDate: { gte: startOfMonth, lte: endOfMonth },
+          appointmentDate: { gte: startDate, lte: endDate },
         },
-      });
+        select: { appointmentDate: true, finalAmount: true },
+      }),
+      // 2. Top services - groupBy in one query
+      prisma.appointmentService.groupBy({
+        by: ['serviceId'],
+        _count: true,
+        _sum: { price: true },
+        orderBy: { _count: { serviceId: 'desc' } },
+        take: 5,
+      }),
+      // 3. Top staff - groupBy in one query
+      prisma.appointment.groupBy({
+        by: ['employeeId'],
+        where: { status: 'COMPLETED', employeeId: { not: null } },
+        _count: true,
+        _sum: { finalAmount: true },
+        orderBy: { _count: { employeeId: 'desc' } },
+        take: 5,
+      }),
+      // 4. Overall totals
+      prisma.appointment.aggregate({
+        where: { status: 'COMPLETED' },
+        _sum: { finalAmount: true },
+      }),
+      prisma.appointment.count(),
+      prisma.customer.count(),
+    ]);
 
-      monthlyData.push({
-        month: `T${date.getMonth() + 1}`,
-        value: appointments.reduce((sum, a) => sum + a.finalAmount, 0),
-        count: appointments.length,
-      });
+    // Group completed appointments by month using JS
+    const monthlyMap = new Map<string, { value: number; count: number }>();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `T${d.getMonth() + 1}`;
+      monthlyMap.set(key, { value: 0, count: 0 });
     }
 
-    // Top services
-    const serviceStats = await prisma.appointmentService.groupBy({
-      by: ['serviceId'],
-      _count: true,
-      _sum: { price: true },
-      orderBy: { _count: { serviceId: 'desc' } },
-      take: 5,
+    allCompletedAppointments.forEach((a) => {
+      const [year, month] = a.appointmentDate.split('-').map(Number);
+      const key = `T${month}`;
+      const entry = monthlyMap.get(key);
+      if (entry) {
+        entry.value += a.finalAmount;
+        entry.count += 1;
+      }
     });
 
-    const topServices = await Promise.all(
-      serviceStats.map(async (s) => {
-        const service = await prisma.service.findUnique({ where: { id: s.serviceId } });
-        return { name: service?.name || 'Unknown', count: s._count, revenue: s._sum.price || 0 };
-      })
-    );
+    const monthlyData = Array.from(monthlyMap.entries()).map(([month, data]) => ({
+      month,
+      ...data,
+    }));
 
-    // Top staff
-    const staffStats = await prisma.appointment.groupBy({
-      by: ['employeeId'],
-      where: { status: 'COMPLETED', employeeId: { not: null } },
-      _count: true,
-      _sum: { finalAmount: true },
-      orderBy: { _count: { employeeId: 'desc' } },
-      take: 5,
-    });
+    // Batch fetch service names (single query instead of N separate ones)
+    const serviceIds = serviceStats.map((s) => s.serviceId);
+    const servicesMap = serviceIds.length > 0
+      ? new Map(
+          (await prisma.service.findMany({
+            where: { id: { in: serviceIds } },
+            select: { id: true, name: true },
+          })).map((s) => [s.id, s.name])
+        )
+      : new Map<string, string>();
 
-    const topStaff = await Promise.all(
-      staffStats.map(async (s) => {
-        if (!s.employeeId) return null;
-        const emp = await prisma.employee.findUnique({ where: { id: s.employeeId }, include: { user: true } });
-        return { name: emp?.user.name || 'Unknown', appointments: s._count, revenue: s._sum.finalAmount || 0 };
-      })
-    );
+    const topServices = serviceStats.map((s) => ({
+      name: servicesMap.get(s.serviceId) || 'Unknown',
+      count: s._count,
+      revenue: s._sum.price || 0,
+    }));
 
-    // Overall
-    const totalRevenue = await prisma.appointment.aggregate({
-      where: { status: 'COMPLETED' },
-      _sum: { finalAmount: true },
-    });
+    // Batch fetch staff names (single query instead of N separate ones)
+    const employeeIds = staffStats.filter((s) => s.employeeId).map((s) => s.employeeId!);
+    const employeesMap = employeeIds.length > 0
+      ? new Map(
+          (await prisma.employee.findMany({
+            where: { id: { in: employeeIds } },
+            include: { user: { select: { name: true } } },
+          })).map((e) => [e.id, e.user.name])
+        )
+      : new Map<string, string>();
 
-    const totalAppointments = await prisma.appointment.count();
-    const totalCustomers = await prisma.customer.count();
+    const topStaff = staffStats
+      .filter((s) => s.employeeId)
+      .map((s) => ({
+        name: employeesMap.get(s.employeeId!) || 'Unknown',
+        appointments: s._count,
+        revenue: s._sum.finalAmount || 0,
+      }));
 
     return {
       monthlyData,
       topServices,
-      topStaff: topStaff.filter(Boolean),
+      topStaff,
       totalRevenue: totalRevenue._sum.finalAmount || 0,
       totalAppointments,
       totalCustomers,

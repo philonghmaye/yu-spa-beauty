@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
 import { getReviews, getReviewStats } from '@/actions/reviews';
 import { FiStar } from 'react-icons/fi';

@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { getVietnamNow } from '@/lib/utils';
 
 export async function getCustomers(search?: string) {
   const where = search ? {
@@ -53,7 +54,7 @@ export async function getCustomerStats() {
   const total = await prisma.customer.count();
   const thisMonth = await prisma.customer.count({
     where: {
-      createdAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
+      createdAt: { gte: (() => { const vn = getVietnamNow(); return new Date(vn.getFullYear(), vn.getMonth(), 1); })() },
     },
   });
   const levels = await prisma.customer.groupBy({

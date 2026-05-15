@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
 import { getCustomers, getCustomerStats } from '@/actions/customers';
 import { formatCurrency } from '@/lib/utils';
