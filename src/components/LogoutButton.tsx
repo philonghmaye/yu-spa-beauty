@@ -1,11 +1,11 @@
 'use client';
 
-import { signOut } from 'next-auth/react';
+import { signOutAction } from '@/actions/auth';
 import { FiLogOut } from 'react-icons/fi';
 
 export default function LogoutButton() {
   const handleLogout = async () => {
-    await signOut({ redirect: true, callbackUrl: '/' });
+    await signOutAction();
   };
 
   return (

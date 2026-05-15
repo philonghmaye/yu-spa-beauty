@@ -1,7 +1,15 @@
 'use server';
 
+import { signOut } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+
+/**
+ * Server-side sign out action — avoids client-side /api/auth/signout 404 on Vercel
+ */
+export async function signOutAction() {
+  await signOut({ redirectTo: '/' });
+}
 
 /**
  * Reset password using email or phone verification
