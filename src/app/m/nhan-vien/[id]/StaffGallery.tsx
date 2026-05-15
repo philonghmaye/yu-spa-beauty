@@ -1,18 +1,82 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { FiArrowLeft, FiHeart, FiShare2, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiArrowLeft, FiHeart, FiShare2 } from 'react-icons/fi';
 
 export default function StaffGallery({ images, name }: { images: string[]; name: string }) {
   const [current, setCurrent] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const isDragging = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const prev = () => setCurrent(i => (i > 0 ? i - 1 : images.length - 1));
-  const next = () => setCurrent(i => (i < images.length - 1 ? i + 1 : 0));
+  const goTo = useCallback((index: number) => {
+    if (index < 0) setCurrent(images.length - 1);
+    else if (index >= images.length) setCurrent(0);
+    else setCurrent(index);
+  }, [images.length]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    isDragging.current = true;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging.current) return;
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    const diff = touchStartX.current - touchEndX.current;
+    const threshold = 50; // minimum swipe distance in px
+
+    if (Math.abs(diff) > threshold) {
+      if (diff > 0) {
+        // Swipe left → next image
+        goTo(current + 1);
+      } else {
+        // Swipe right → previous image
+        goTo(current - 1);
+      }
+    }
+  };
 
   return (
-    <div className="m-staff-hero" style={{ position: 'relative', overflow: 'hidden' }}>
-      <img src={images[current]} alt={`${name} ${current + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+    <div
+      ref={containerRef}
+      className="m-staff-hero"
+      style={{ position: 'relative', overflow: 'hidden', touchAction: 'pan-y' }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Image strip */}
+      <div style={{
+        display: 'flex',
+        width: `${images.length * 100}%`,
+        transform: `translateX(-${current * (100 / images.length)}%)`,
+        transition: 'transform 0.3s ease-out',
+        height: '100%',
+      }}>
+        {images.map((url, i) => (
+          <img
+            key={i}
+            src={url}
+            alt={`${name} ${i + 1}`}
+            style={{
+              width: `${100 / images.length}%`,
+              height: '100%',
+              objectFit: 'cover',
+              flexShrink: 0,
+              pointerEvents: 'none',
+            }}
+            draggable={false}
+          />
+        ))}
+      </div>
 
       {/* Navigation overlay */}
       <div className="m-staff-hero-overlay">
@@ -37,26 +101,14 @@ export default function StaffGallery({ images, name }: { images: string[]; name:
         <span className="m-staff-hero-count">{current + 1}/{images.length}</span>
       )}
 
-      {/* Arrow buttons */}
-      {images.length > 1 && (
-        <>
-          <button onClick={prev} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,0,0,0.3)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FiChevronLeft />
-          </button>
-          <button onClick={next} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,0,0,0.3)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FiChevronRight />
-          </button>
-        </>
-      )}
-
       {/* Dots */}
       {images.length > 1 && (
         <div style={{ position: 'absolute', bottom: 44, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 5 }}>
           {images.map((_, i) => (
             <div key={i} onClick={() => setCurrent(i)} style={{
-              width: i === current ? 16 : 6, height: 6,
+              width: i === current ? 18 : 6, height: 6,
               borderRadius: 3, background: i === current ? '#fff' : 'rgba(255,255,255,0.5)',
-              cursor: 'pointer', transition: 'all 0.2s',
+              cursor: 'pointer', transition: 'all 0.3s',
             }} />
           ))}
         </div>
