@@ -8,6 +8,7 @@ export async function getStaffForMobile(filter?: string) {
     where: { isAvailable: true, user: { isActive: true } },
     include: {
       user: { select: { id: true, name: true, avatar: true, createdAt: true } },
+      images: { orderBy: { sortOrder: 'asc' }, take: 1 },
       skills: {
         include: { service: { select: { id: true, name: true, price: true, discountPrice: true, duration: true, categoryId: true, category: { select: { name: true } } } } },
       },
@@ -30,7 +31,7 @@ export async function getStaffForMobile(filter?: string) {
     return {
       id: s.id,
       name: s.user.name,
-      avatar: s.user.avatar,
+      avatar: s.images[0]?.url || s.user.avatar,
       rating: avgRating,
       reviewCount: reviews.length,
       isNew,
