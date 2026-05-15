@@ -4,9 +4,13 @@ import { signOut } from 'next-auth/react';
 import { FiLogOut } from 'react-icons/fi';
 
 export default function LogoutButton() {
+  const handleLogout = async () => {
+    await signOut({ redirect: true, callbackUrl: '/' });
+  };
+
   return (
     <button
-      onClick={() => signOut({ callbackUrl: '/' })}
+      onClick={handleLogout}
       className="account-nav-link"
       style={{
         color: 'var(--error)',

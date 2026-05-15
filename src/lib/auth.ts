@@ -58,5 +58,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: '/dang-nhap',
   },
   session: { strategy: 'jwt' },
+  trustHost: true,
   secret: process.env.NEXTAUTH_SECRET,
 });
