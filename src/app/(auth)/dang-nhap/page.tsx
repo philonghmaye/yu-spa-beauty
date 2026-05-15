@@ -47,6 +47,11 @@ export default function LoginPage() {
             <label className="form-label">Mật khẩu</label>
             <input type="password" className="form-input" value={password} onChange={e => setPassword(e.target.value)} placeholder="Nhập mật khẩu" required />
           </div>
+          <div style={{ textAlign: 'right', marginBottom: '16px' }}>
+            <Link href="/quen-mat-khau" style={{ fontSize: '0.85rem', color: 'var(--primary)' }}>
+              Quên mật khẩu?
+            </Link>
+          </div>
           <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
             <FiLogIn /> {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>

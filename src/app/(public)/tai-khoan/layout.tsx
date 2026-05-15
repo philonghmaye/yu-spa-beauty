@@ -3,7 +3,8 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { FiUser, FiCalendar, FiStar, FiLogOut } from 'react-icons/fi';
+import LogoutButton from '@/components/LogoutButton';
+import { FiUser, FiCalendar, FiStar } from 'react-icons/fi';
 
 const accountNav = [
   { href: '/tai-khoan', label: 'Tổng quan', icon: <FiUser /> },
@@ -44,10 +45,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
                       </li>
                     ))}
                     <li style={{ marginTop: '16px', borderTop: '1px solid var(--neutral-200)', paddingTop: '16px' }}>
-                      <Link href="/api/auth/signout" className="account-nav-link" style={{ color: 'var(--error)' }}>
-                        <span className="account-nav-icon"><FiLogOut /></span>
-                        Đăng xuất
-                      </Link>
+                      <LogoutButton />
                     </li>
                   </ul>
                 </nav>

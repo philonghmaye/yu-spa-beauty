@@ -1,0 +1,30 @@
+'use client';
+
+import { signOut } from 'next-auth/react';
+import { FiLogOut } from 'react-icons/fi';
+
+export default function LogoutButton() {
+  return (
+    <button
+      onClick={() => signOut({ callbackUrl: '/' })}
+      className="account-nav-link"
+      style={{
+        color: 'var(--error)',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        width: '100%',
+        textAlign: 'left',
+        padding: '12px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontSize: 'inherit',
+        fontFamily: 'inherit',
+      }}
+    >
+      <span className="account-nav-icon"><FiLogOut /></span>
+      Đăng xuất
+    </button>
+  );
+}
