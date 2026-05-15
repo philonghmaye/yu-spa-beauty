@@ -79,23 +79,21 @@ export default async function MobileHomePage() {
         <Link href="/m/kham-pha" style={{ textDecoration: 'none', color: 'inherit' }}>
           <div style={{
             borderRadius: 'var(--radius-lg)', overflow: 'hidden',
-            background: 'linear-gradient(135deg, #c084fc, #a855f7)',
-            padding: '28px 24px', marginBottom: 14,
-            position: 'relative', minHeight: 180,
+            position: 'relative', minHeight: 200, marginBottom: 14,
           }}>
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <h2 style={{ color: '#fff', fontSize: '1.4rem', marginBottom: 6, lineHeight: 1.3 }}>
+            <img src="/uploads/banner-booking.png" alt="Đặt lịch Spa" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, rgba(168,85,247,0.7), rgba(139,92,246,0.5))' }} />
+            <div style={{ position: 'relative', zIndex: 1, padding: '28px 24px' }}>
+              <h2 style={{ color: '#fff', fontSize: '1.4rem', marginBottom: 6, lineHeight: 1.3, textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
                 Đặt lịch Spa
               </h2>
-              <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.88rem', marginBottom: 20 }}>
+              <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.88rem', marginBottom: 20, textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
                 Xem & chọn kỹ thuật viên
               </p>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', backdropFilter: 'blur(4px)' }}>
                 <FiArrowRight />
               </div>
             </div>
-            <div style={{ position: 'absolute', right: -10, bottom: -10, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
-            <div style={{ position: 'absolute', right: 30, top: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
           </div>
         </Link>
 
@@ -103,22 +101,21 @@ export default async function MobileHomePage() {
         <Link href="/dich-vu" style={{ textDecoration: 'none', color: 'inherit' }}>
           <div style={{
             borderRadius: 'var(--radius-lg)', overflow: 'hidden',
-            background: 'linear-gradient(135deg, #f472b6, #ec4899)',
-            padding: '28px 24px', marginBottom: 14,
-            position: 'relative', minHeight: 160,
+            position: 'relative', minHeight: 180, marginBottom: 14,
           }}>
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <h2 style={{ color: '#fff', fontSize: '1.3rem', marginBottom: 6, lineHeight: 1.3 }}>
+            <img src="/uploads/banner-beauty.png" alt="Dịch vụ làm đẹp" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, rgba(236,72,153,0.65), rgba(244,114,182,0.45))' }} />
+            <div style={{ position: 'relative', zIndex: 1, padding: '28px 24px' }}>
+              <h2 style={{ color: '#fff', fontSize: '1.3rem', marginBottom: 6, lineHeight: 1.3, textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
                 Dịch vụ làm đẹp
               </h2>
-              <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.85rem', marginBottom: 16 }}>
+              <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.85rem', marginBottom: 16, textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
                 {categories.length}+ dịch vụ đa dạng
               </p>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', backdropFilter: 'blur(4px)' }}>
                 <FiArrowRight />
               </div>
             </div>
-            <div style={{ position: 'absolute', right: -10, bottom: -10, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
           </div>
         </Link>
       </div>
