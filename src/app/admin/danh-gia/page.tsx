@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getReviews, getReviewStats } from '@/actions/reviews';
 import { FiStar } from 'react-icons/fi';
 import ReviewAdminActions from './ReviewAdminActions';

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getPromotions } from '@/actions/promotions';
 import { formatCurrency } from '@/lib/utils';
 import PromotionActions from './PromotionActions';

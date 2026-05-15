@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getServices, getCategories } from '@/actions/services';
 import { formatCurrency } from '@/lib/utils';
 import ServiceActions from './ServiceActions';

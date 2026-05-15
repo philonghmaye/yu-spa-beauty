@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { FiTrendingUp, FiCalendar, FiUsers } from 'react-icons/fi';
 import { formatCurrency } from '@/lib/utils';
 import prisma from '@/lib/prisma';

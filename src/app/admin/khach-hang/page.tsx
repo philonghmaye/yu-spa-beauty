@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getCustomers, getCustomerStats } from '@/actions/customers';
 import { formatCurrency } from '@/lib/utils';
 import { FiUser, FiPhone, FiMail, FiUsers } from 'react-icons/fi';

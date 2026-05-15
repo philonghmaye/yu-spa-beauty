@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAppointments } from '@/actions/appointments';
 import { formatCurrency, getStatusLabel, getStatusColor } from '@/lib/utils';
 import { FiClock } from 'react-icons/fi';

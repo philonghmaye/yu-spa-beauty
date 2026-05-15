@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { FiCalendar, FiUsers, FiDollarSign, FiTrendingUp, FiClock } from 'react-icons/fi';
 import prisma from '@/lib/prisma';
 import { formatCurrency, getStatusLabel, getStatusColor } from '@/lib/utils';
