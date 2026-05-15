@@ -1,0 +1,249 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// User & Authentication
+// ============================================
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  phone         String?   @unique
+  password      String
+  name          String
+  role          String    @default("CUSTOMER") // ADMIN, STAFF, CUSTOMER
+  avatar        String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  customer      Customer?
+  employee      Employee?
+}
+
+// ============================================
+// Customer - Extended customer information
+// ============================================
+model Customer {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  birthday      DateTime?
+  gender        String?   // MALE, FEMALE, OTHER
+  address       String?
+  notes         String?   // Internal notes about customer
+  totalPoints   Int       @default(0)
+  memberLevel   String    @default("STANDARD") // STANDARD, SILVER, GOLD, VIP
+  totalVisits   Int       @default(0)
+  totalSpent    Float     @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  appointments  Appointment[]
+  reviews       Review[]
+}
+
+// ============================================
+// Employee - Staff information
+// ============================================
+model Employee {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  position      String?   // Senior Stylist, Nail Technician, etc.
+  bio           String?
+  experience    Int?      // Years of experience
+  isAvailable   Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  skills        EmployeeSkill[]
+  schedules     WorkSchedule[]
+  appointments  Appointment[]
+}
+
+// ============================================
+// Service Categories
+// ============================================
+model Category {
+  id            String    @id @default(cuid())
+  name          String    @unique
+  slug          String    @unique
+  description   String?
+  icon          String?
+  image         String?
+  sortOrder     Int       @default(0)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  services      Service[]
+}
+
+// ============================================
+// Services
+// ============================================
+model Service {
+  id            String    @id @default(cuid())
+  categoryId    String
+  category      Category  @relation(fields: [categoryId], references: [id])
+  name          String
+  slug          String    @unique
+  description   String?
+  price         Float
+  discountPrice Float?
+  duration      Int       // Duration in minutes
+  image         String?
+  isActive      Boolean   @default(true)
+  isFeatured    Boolean   @default(false)
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  skills        EmployeeSkill[]
+  appointmentServices AppointmentService[]
+}
+
+// ============================================
+// Employee Skills (many-to-many)
+// ============================================
+model EmployeeSkill {
+  id            String    @id @default(cuid())
+  employeeId    String
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  serviceId     String
+  service       Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  proficiency   String    @default("INTERMEDIATE") // BEGINNER, INTERMEDIATE, EXPERT
+
+  @@unique([employeeId, serviceId])
+}
+
+// ============================================
+// Work Schedule
+// ============================================
+model WorkSchedule {
+  id            String    @id @default(cuid())
+  employeeId    String
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  dayOfWeek     Int       // 0=Sunday, 1=Monday, ..., 6=Saturday
+  startTime     String    // "08:00"
+  endTime       String    // "17:00"
+  isActive      Boolean   @default(true)
+
+  @@unique([employeeId, dayOfWeek])
+}
+
+// ============================================
+// Appointment
+// ============================================
+model Appointment {
+  id            String    @id @default(cuid())
+  customerId    String
+  customer      Customer  @relation(fields: [customerId], references: [id])
+  employeeId    String?
+  employee      Employee? @relation(fields: [employeeId], references: [id])
+  promotionId   String?
+  promotion     Promotion? @relation(fields: [promotionId], references: [id])
+
+  appointmentDate String  // "2026-05-15"
+  startTime     String    // "09:00"
+  endTime       String    // "10:30"
+  status        String    @default("PENDING") // PENDING, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW
+  customerNote  String?
+  staffNote     String?
+  totalAmount   Float     @default(0)
+  discountAmount Float    @default(0)
+  finalAmount   Float     @default(0)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  services      AppointmentService[]
+  review        Review?
+  notifications Notification[]
+}
+
+// ============================================
+// Appointment Services (many-to-many)
+// ============================================
+model AppointmentService {
+  id            String    @id @default(cuid())
+  appointmentId String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  serviceId     String
+  service       Service   @relation(fields: [serviceId], references: [id])
+  price         Float
+  duration      Int
+
+  @@unique([appointmentId, serviceId])
+}
+
+// ============================================
+// Review
+// ============================================
+model Review {
+  id            String    @id @default(cuid())
+  customerId    String
+  customer      Customer  @relation(fields: [customerId], references: [id])
+  appointmentId String    @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  rating        Int       // 1-5
+  comment       String?
+  isVisible     Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// ============================================
+// Promotion
+// ============================================
+model Promotion {
+  id            String    @id @default(cuid())
+  name          String
+  code          String    @unique
+  description   String?
+  type          String    // PERCENTAGE, FIXED
+  value         Float     // Discount value
+  minOrderValue Float?
+  maxDiscount   Float?
+  usageLimit    Int?
+  usedCount     Int       @default(0)
+  startDate     DateTime
+  endDate       DateTime
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  appointments  Appointment[]
+}
+
+// ============================================
+// Notification
+// ============================================
+model Notification {
+  id            String    @id @default(cuid())
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  type          String    // BOOKING_CONFIRMED, REMINDER_24H, REMINDER_2H, CANCELLED, COMPLETED
+  channel       String    // ZALO, EMAIL, SMS
+  recipient     String    // Phone or email
+  content       String
+  status        String    @default("PENDING") // PENDING, SENT, FAILED
+  sentAt        DateTime?
+  createdAt     DateTime  @default(now())
+}
+
+// ============================================
+// Store Settings
+// ============================================
+model StoreSetting {
+  id            String    @id @default(cuid())
+  key           String    @unique
+  value         String
+  updatedAt     DateTime  @updatedAt
+}
