@@ -142,3 +142,31 @@ export async function deleteStaff(employeeId: string) {
   await prisma.user.update({ where: { id: employee.userId }, data: { isActive: false } });
   revalidatePath('/admin/nhan-vien');
 }
+
+// ============ EMPLOYEE IMAGES ============
+
+export async function getStaffImages(employeeId: string) {
+  return prisma.employeeImage.findMany({
+    where: { employeeId },
+    orderBy: { sortOrder: 'asc' },
+  });
+}
+
+export async function addStaffImage(employeeId: string, url: string) {
+  const maxOrder = await prisma.employeeImage.findFirst({
+    where: { employeeId },
+    orderBy: { sortOrder: 'desc' },
+  });
+  await prisma.employeeImage.create({
+    data: { employeeId, url, sortOrder: (maxOrder?.sortOrder || 0) + 1 },
+  });
+  revalidatePath('/admin/nhan-vien');
+  revalidatePath('/m');
+}
+
+export async function removeStaffImage(imageId: string) {
+  await prisma.employeeImage.delete({ where: { id: imageId } });
+  revalidatePath('/admin/nhan-vien');
+  revalidatePath('/m');
+}
+

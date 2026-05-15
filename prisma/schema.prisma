@@ -65,6 +65,19 @@ model Employee {
   skills        EmployeeSkill[]
   schedules     WorkSchedule[]
   appointments  Appointment[]
+  images        EmployeeImage[]
+}
+
+// ============================================
+// Employee Images - Multiple photos per staff
+// ============================================
+model EmployeeImage {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  url         String
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
 }
 
 // ============================================

@@ -55,6 +55,7 @@ export async function getStaffDetail(id: string) {
     where: { id },
     include: {
       user: { select: { id: true, name: true, avatar: true } },
+      images: { orderBy: { sortOrder: 'asc' } },
       skills: {
         include: {
           service: {
@@ -87,6 +88,7 @@ export async function getStaffDetail(id: string) {
     id: staff.id,
     name: staff.user.name,
     avatar: staff.user.avatar,
+    images: staff.images.map((img) => ({ id: img.id, url: img.url })),
     bio: staff.bio,
     position: staff.position,
     experience: staff.experience,

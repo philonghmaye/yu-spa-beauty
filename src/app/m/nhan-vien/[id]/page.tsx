@@ -1,40 +1,37 @@
 import { getStaffDetail } from '@/actions/mobile';
 import { notFound } from 'next/navigation';
 import StaffBooking from './StaffBooking';
+import StaffGallery from './StaffGallery';
 import Link from 'next/link';
-import { FiArrowLeft, FiHeart, FiShare2, FiCheckCircle, FiStar } from 'react-icons/fi';
+import { FiArrowLeft, FiHeart, FiShare2, FiCheckCircle } from 'react-icons/fi';
 
 export default async function StaffDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const staff = await getStaffDetail(id);
   if (!staff) notFound();
 
+  // Build image list: employee images first, then avatar as fallback
+  const allImages = staff.images.length > 0
+    ? staff.images.map(img => img.url)
+    : staff.avatar ? [staff.avatar] : [];
+
   return (
     <>
-      {/* Hero Image */}
-      <div className="m-staff-hero">
-        {staff.avatar ? (
-          <img src={staff.avatar} alt={staff.name} />
-        ) : (
+      {/* Hero Image Gallery */}
+      {allImages.length > 0 ? (
+        <StaffGallery images={allImages} name={staff.name} />
+      ) : (
+        <div className="m-staff-hero">
           <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, var(--primary-light), var(--accent-light))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '5rem', color: 'var(--primary)' }}>
             {staff.name.charAt(0)}
           </div>
-        )}
-        <div className="m-staff-hero-overlay">
-          <Link href="/m" style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-            <FiArrowLeft />
-          </Link>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <span style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-              <FiHeart />
-            </span>
-            <span style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-              <FiShare2 />
-            </span>
+          <div className="m-staff-hero-overlay">
+            <Link href="/m/kham-pha" style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+              <FiArrowLeft />
+            </Link>
           </div>
         </div>
-        <span className="m-staff-hero-badge">Chất lượng</span>
-      </div>
+      )}
 
       {/* Staff Info */}
       <div className="m-staff-detail">
@@ -67,7 +64,7 @@ export default async function StaffDetailPage({ params }: { params: Promise<{ id
       <StaffBooking
         staffId={staff.id}
         staffName={staff.name}
-        staffAvatar={staff.avatar}
+        staffAvatar={allImages[0] || staff.avatar}
         staffRating={staff.rating}
         staffReviewCount={staff.reviewCount}
         services={staff.services}
