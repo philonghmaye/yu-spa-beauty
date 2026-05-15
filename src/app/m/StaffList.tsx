@@ -74,9 +74,6 @@ export default function StaffList({ initialStaff }: { initialStaff: StaffItem[] 
                   {staff.name.charAt(0)}
                 </div>
               )}
-              <span className={`m-staff-badge ${staff.isNew ? 'new' : ''}`}>
-                {staff.isNew ? 'Mới đến' : 'Chất lượng'}
-              </span>
             </div>
             <div className="m-staff-info">
               <div className="m-staff-name">{staff.name}</div>
