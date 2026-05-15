@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const revalidate = 60; // Cache 60s, then refresh
 
 import Image from 'next/image';
 import Link from 'next/link';

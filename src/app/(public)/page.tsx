@@ -1,3 +1,5 @@
+export const revalidate = 60;
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiCalendar, FiStar, FiUsers, FiAward, FiArrowRight, FiClock, FiHeart } from 'react-icons/fi';
