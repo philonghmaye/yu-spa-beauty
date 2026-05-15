@@ -2,28 +2,29 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { addMinutesToTime, getVietnamNow } from '@/lib/utils';
+import { addMinutesToTime, getVietnamNow, generateSlotTimes } from '@/lib/utils';
 import { sendBookingConfirmation } from '@/lib/email';
+import { getBusinessHours } from '@/actions/settings';
 
 // ============ LOAD DATA FOR BOOKING FORM ============
 
-export async function getBookingServices() {
-  return prisma.service.findMany({
-    where: { isActive: true },
-    include: { category: { select: { id: true, name: true, slug: true, icon: true } } },
-    orderBy: [{ category: { sortOrder: 'asc' } }, { sortOrder: 'asc' }],
-  });
-}
-
-export async function getBookingStaff() {
-  return prisma.employee.findMany({
-    where: { isAvailable: true, user: { isActive: true } },
-    include: {
-      user: { select: { name: true, avatar: true } },
-      skills: { include: { service: { select: { id: true, name: true } } } },
-      schedules: true,
-    },
-  });
+export async function getBookingData() {
+  const [services, staff] = await Promise.all([
+    prisma.service.findMany({
+      where: { isActive: true },
+      include: { category: { select: { id: true, name: true, slug: true, icon: true } } },
+      orderBy: [{ category: { sortOrder: 'asc' } }, { sortOrder: 'asc' }],
+    }),
+    prisma.employee.findMany({
+      where: { isAvailable: true, user: { isActive: true } },
+      include: {
+        user: { select: { name: true, avatar: true } },
+        skills: { include: { service: { select: { id: true, name: true } } } },
+        schedules: { where: { isActive: true } },
+      },
+    }),
+  ]);
+  return { services, staff };
 }
 
 // ============ SLOT AVAILABILITY ============
@@ -33,15 +34,11 @@ export async function getAvailableSlots(
   employeeId: string | null,
   totalDuration: number
 ) {
-  // Generate all possible slots (09:00 - 18:30, 30min intervals)
-  const allSlots = [];
-  for (let h = 9; h <= 18; h++) {
-    for (const m of [0, 30]) {
-      if (h === 18 && m > 30) continue;
-      const time = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-      allSlots.push(time);
-    }
-  }
+  // Get business hours from store settings
+  const { openTime, closeTime, slotInterval } = await getBusinessHours();
+
+  // Generate all possible slots based on business hours
+  const allSlots = generateSlotTimes(openTime, closeTime, slotInterval);
 
   // Get ALL existing appointments for this date
   const existingAppointments = await prisma.appointment.findMany({
@@ -64,8 +61,8 @@ export async function getAvailableSlots(
   const slots = allSlots.map((time) => {
     const slotEnd = addMinutesToTime(time, totalDuration);
     
-    // Check if slot end time exceeds business hours (19:00)
-    if (slotEnd > '19:00') {
+    // Check if slot end time exceeds business closing time
+    if (slotEnd > closeTime) {
       return { time, available: false };
     }
 

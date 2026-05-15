@@ -1,12 +1,11 @@
-import { getBookingServices, getBookingStaff } from '@/actions/booking';
+import { getBookingData } from '@/actions/booking';
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import BookingForm from './BookingForm';
 
 export default async function BookingPage() {
-  const [services, staff, session] = await Promise.all([
-    getBookingServices(),
-    getBookingStaff(),
+  const [{ services, staff }, session] = await Promise.all([
+    getBookingData(),
     auth(),
   ]);
 

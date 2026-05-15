@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FiHome, FiCalendar, FiScissors, FiUsers, FiUserCheck, FiBarChart2, FiGift, FiStar, FiArrowLeft } from 'react-icons/fi';
+import { FiHome, FiCalendar, FiScissors, FiUsers, FiUserCheck, FiBarChart2, FiGift, FiStar, FiSettings, FiArrowLeft } from 'react-icons/fi';
 
 const adminNav = [
   { href: '/admin', label: 'Tổng quan', icon: <FiHome /> },
@@ -10,6 +10,7 @@ const adminNav = [
   { href: '/admin/khuyen-mai', label: 'Khuyến mãi', icon: <FiGift /> },
   { href: '/admin/danh-gia', label: 'Đánh giá', icon: <FiStar /> },
   { href: '/admin/thong-ke', label: 'Thống kê', icon: <FiBarChart2 /> },
+  { href: '/admin/cai-dat', label: 'Cài đặt', icon: <FiSettings /> },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

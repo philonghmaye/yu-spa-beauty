@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { addMinutesToTime, getVietnamNow, getVietnamToday } from '@/lib/utils';
+import { addMinutesToTime, getVietnamNow, getVietnamToday, generateSlotTimes } from '@/lib/utils';
+import { getBusinessHours } from '@/actions/settings';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -12,15 +13,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing date parameter' }, { status: 400 });
   }
 
-  // Generate all possible slots (09:00 - 18:30, 30min intervals)
-  const allSlots = [];
-  for (let h = 9; h <= 18; h++) {
-    for (const m of [0, 30]) {
-      if (h === 18 && m > 30) continue;
-      const time = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-      allSlots.push(time);
-    }
-  }
+  // Get business hours from store settings
+  const { openTime, closeTime, slotInterval } = await getBusinessHours();
+
+  // Generate all possible slots based on business hours
+  const allSlots = generateSlotTimes(openTime, closeTime, slotInterval);
 
   // Get ALL existing appointments for this date (active statuses)
   const existingAppointments = await prisma.appointment.findMany({
@@ -43,8 +40,8 @@ export async function GET(request: NextRequest) {
   const slots = allSlots.map((time) => {
     const slotEnd = addMinutesToTime(time, duration);
 
-    // Exceeds business hours
-    if (slotEnd > '19:00') {
+    // Exceeds business closing time
+    if (slotEnd > closeTime) {
       return { time, available: false };
     }
 
@@ -66,18 +63,16 @@ export async function GET(request: NextRequest) {
       return { time, available: !hasConflict };
     } else {
       // === ANY EMPLOYEE: slot available if at least 1 employee is free ===
-      // Count how many employees are busy at this time
       const busyEmployeeIds = new Set<string>();
       existingAppointments.forEach((apt) => {
         if (apt.employeeId && time < apt.endTime && slotEnd > apt.startTime) {
           busyEmployeeIds.add(apt.employeeId);
         }
       });
-      // Available if not ALL employees are busy
       const available = busyEmployeeIds.size < totalEmployees;
       return { time, available };
     }
   });
 
-  return NextResponse.json({ slots });
+  return NextResponse.json({ slots, businessHours: { openTime, closeTime } });
 }

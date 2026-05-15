@@ -105,3 +105,21 @@ export function addMinutesToTime(time: string, minutes: number): string {
   const t = parse(time, 'HH:mm', new Date());
   return format(addMinutes(t, minutes), 'HH:mm');
 }
+
+/**
+ * Generate time slot strings based on business hours
+ */
+export function generateSlotTimes(openTime: string, closeTime: string, interval: number): string[] {
+  const [openH, openM] = openTime.split(':').map(Number);
+  const [closeH, closeM] = closeTime.split(':').map(Number);
+  const openMinutes = openH * 60 + openM;
+  const closeMinutes = closeH * 60 + closeM;
+
+  const slots: string[] = [];
+  for (let t = openMinutes; t < closeMinutes; t += interval) {
+    const h = Math.floor(t / 60);
+    const m = t % 60;
+    slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
+  }
+  return slots;
+}
