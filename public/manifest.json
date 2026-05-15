@@ -1,0 +1,22 @@
+{
+  "name": "YURI SPA BEAUTY",
+  "short_name": "YURI SPA",
+  "description": "Đặt lịch Spa & Làm đẹp chuyên nghiệp",
+  "start_url": "/m/",
+  "display": "standalone",
+  "background_color": "#fdfaff",
+  "theme_color": "#a855f7",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -21,6 +21,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi" className={beVietnamPro.variable}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#a855f7" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="YURI SPA" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+      </head>
       <body>
         <Providers>
           {children}

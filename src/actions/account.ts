@@ -2,6 +2,24 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { auth } from '@/lib/auth';
+
+export async function updateProfile(data: { name: string; phone: string; email: string }) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error('Chưa đăng nhập');
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      name: data.name,
+      phone: data.phone || null,
+      email: data.email || null,
+    },
+  });
+
+  revalidatePath('/m/tai-khoan');
+  revalidatePath('/tai-khoan');
+}
 
 export async function getMyProfile(userId: string) {
   return prisma.customer.findFirst({

@@ -167,6 +167,7 @@ model Appointment {
   services      AppointmentService[]
   review        Review?
   notifications Notification[]
+  payment       Payment?
 }
 
 // ============================================
@@ -248,3 +249,21 @@ model StoreSetting {
   value         String
   updatedAt     DateTime  @updatedAt
 }
+
+// ============================================
+// Payment
+// ============================================
+model Payment {
+  id              String    @id @default(cuid())
+  appointmentId   String    @unique
+  appointment     Appointment @relation(fields: [appointmentId], references: [id])
+  method          String    // VNPAY, CASH
+  amount          Float
+  transactionId   String?
+  status          String    @default("PENDING") // PENDING, SUCCESS, FAILED
+  paidAt          DateTime?
+  rawResponse     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
