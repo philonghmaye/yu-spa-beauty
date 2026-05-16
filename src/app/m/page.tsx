@@ -76,7 +76,7 @@ export default async function MobileHomePage() {
       {/* Hero Service Cards */}
       <div style={{ padding: '0 16px' }}>
         {/* Main Card - Dịch vụ làm đẹp & Spa */}
-        <Link href="/dich-vu" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Link href="/m/kham-pha" style={{ textDecoration: 'none', color: 'inherit' }}>
           <div style={{
             borderRadius: 'var(--radius-lg)', overflow: 'hidden',
             position: 'relative', height: 220, marginBottom: 14,
