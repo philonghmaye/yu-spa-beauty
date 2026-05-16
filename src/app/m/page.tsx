@@ -1,10 +1,22 @@
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { FiMessageCircle, FiArrowRight, FiStar } from 'react-icons/fi';
 
 export default async function MobileHomePage() {
   const session = await auth();
+
+  // Redirect admin to admin dashboard
+  if (session?.user?.id) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true, avatar: true, role: true },
+    });
+    if (user?.role === 'ADMIN') {
+      redirect('/m/admin');
+    }
+  }
 
   // Get user info if logged in
   let userName = '';
