@@ -455,3 +455,9 @@
 .m-time-slot.unavailable {
   opacity: 0.3; cursor: not-allowed; text-decoration: line-through;
 }
+
+/* Brand shimmer animation */
+@keyframes shimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
