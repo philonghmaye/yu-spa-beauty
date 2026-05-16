@@ -69,7 +69,7 @@ export default async function MobileHomePage() {
             <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>
               {userName ? `Xin chào, ${userName}` : 'Xin chào!'}
             </div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, background: 'linear-gradient(90deg, #7c3aed, #a855f7, #ec4899, #a855f7)', backgroundSize: '200% auto', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', animation: 'shimmer 3s linear infinite' }}>YURI SPA BEAUTY ✨</div>
+            <div style={{ fontSize: '0.95rem', fontWeight: 700, background: 'linear-gradient(90deg, #7c3aed, #a855f7, #ec4899, #a855f7)', backgroundSize: '200% auto', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', animation: 'shimmer 3s linear infinite' }}>YURI SPA BEAUTY ✨</div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
