@@ -96,28 +96,6 @@ export default async function MobileHomePage() {
             </div>
           </div>
         </Link>
-
-        {/* Secondary Card - Đặt lịch */}
-        <Link href="/m/kham-pha" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <div style={{
-            borderRadius: 'var(--radius-lg)', overflow: 'hidden',
-            position: 'relative', height: 200, marginBottom: 14,
-          }}>
-            <img src="/uploads/banner-booking.png" alt="Đặt lịch Spa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '70%', background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)' }} />
-            <div style={{ position: 'absolute', bottom: 0, left: 0, padding: '20px 24px', zIndex: 1 }}>
-              <h2 style={{ color: '#fff', fontSize: '1.3rem', marginBottom: 4, lineHeight: 1.3, textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
-                Đặt lịch Spa
-              </h2>
-              <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.85rem', marginBottom: 14, textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-                Xem & chọn kỹ thuật viên
-              </p>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', backdropFilter: 'blur(4px)' }}>
-                <FiArrowRight />
-              </div>
-            </div>
-          </div>
-        </Link>
       </div>
 
       {/* Service Category Chips */}
