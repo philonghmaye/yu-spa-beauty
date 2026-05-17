@@ -107,7 +107,7 @@ export default function MobileBookingForm({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             amount: total,
-            orderId: `YURI-${result.appointmentId}-${Date.now()}`,
+            orderId: `YURI-${result.id}-${Date.now()}`,
             orderInfo: `Đặt lịch ${booking.service.name} - YURI SPA BEAUTY`,
           }),
         });
