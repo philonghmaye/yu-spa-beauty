@@ -99,6 +99,31 @@ export default function MobileBookingForm({
         promoCode: promoResult?.valid ? promoCode.trim() : undefined,
         userId,
       });
+
+      // Handle MoMo payment
+      if (paymentMethod === 'MOMO') {
+        const momoRes = await fetch('/api/payment/momo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: total,
+            orderId: `YURI-${result.appointmentId}-${Date.now()}`,
+            orderInfo: `Đặt lịch ${booking.service.name} - YURI SPA BEAUTY`,
+          }),
+        });
+        const momoData = await momoRes.json();
+        if (momoData.payUrl) {
+          sessionStorage.setItem('mobileBookingResult', JSON.stringify(result));
+          sessionStorage.removeItem('mobileBooking');
+          window.location.href = momoData.payUrl;
+          return;
+        } else {
+          toast.error(momoData.error || 'Không thể kết nối MoMo');
+          setSubmitting(false);
+          return;
+        }
+      }
+
       sessionStorage.setItem('mobileBookingResult', JSON.stringify(result));
       sessionStorage.removeItem('mobileBooking');
       router.push('/m/dat-lich/ket-qua');
@@ -186,6 +211,11 @@ export default function MobileBookingForm({
           <div className={`m-payment-option ${paymentMethod === 'CASH' ? 'active' : ''}`} onClick={() => setPaymentMethod('CASH')}>
             <div className="icon">💰</div>
             <div className="label">Tiền mặt</div>
+            <div className="radio" />
+          </div>
+          <div className={`m-payment-option ${paymentMethod === 'MOMO' ? 'active' : ''}`} onClick={() => setPaymentMethod('MOMO')}>
+            <div className="icon" style={{ background: '#ae2070', color: '#fff', fontWeight: 700, fontSize: '0.7rem' }}>M</div>
+            <div className="label">Ví MoMo</div>
             <div className="radio" />
           </div>
           <div className={`m-payment-option ${paymentMethod === 'VNPAY' ? 'active' : ''}`} onClick={() => setPaymentMethod('VNPAY')}>
