@@ -60,8 +60,18 @@ export default async function StaffDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
+      {/* Services */}
+      <StaffBooking
+        staffId={staff.id}
+        staffName={staff.name}
+        staffAvatar={allImages[0] || staff.avatar}
+        staffRating={staff.rating}
+        staffReviewCount={staff.reviewCount}
+        services={staff.services}
+      />
+
       {/* Reviews Section */}
-      <div style={{ padding: '0 16px 16px' }}>
+      <div style={{ padding: '16px 16px 100px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Đánh giá</h2>
           {staff.reviewCount > 0 && (
@@ -141,16 +151,6 @@ export default async function StaffDetailPage({ params }: { params: Promise<{ id
           </p>
         )}
       </div>
-
-      {/* Services */}
-      <StaffBooking
-        staffId={staff.id}
-        staffName={staff.name}
-        staffAvatar={allImages[0] || staff.avatar}
-        staffRating={staff.rating}
-        staffReviewCount={staff.reviewCount}
-        services={staff.services}
-      />
     </>
   );
 }
