@@ -70,7 +70,18 @@ export async function getStaffDetail(id: string) {
       },
       appointments: {
         where: { status: 'COMPLETED' },
-        select: { review: { select: { rating: true } } },
+        select: {
+          review: {
+            select: {
+              rating: true,
+              comment: true,
+              createdAt: true,
+              customer: {
+                select: { user: { select: { name: true, avatar: true } } },
+              },
+            },
+          },
+        },
       },
       schedules: { where: { isActive: true } },
     },
@@ -85,6 +96,12 @@ export async function getStaffDetail(id: string) {
     ? Math.round((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) * 10) / 10
     : 5.0;
 
+  // Rating distribution (1-5 stars)
+  const ratingDist = [0, 0, 0, 0, 0]; // index 0 = 1 star, index 4 = 5 stars
+  reviews.forEach((r) => {
+    if (r.rating >= 1 && r.rating <= 5) ratingDist[r.rating - 1]++;
+  });
+
   return {
     id: staff.id,
     name: staff.user.name,
@@ -95,6 +112,14 @@ export async function getStaffDetail(id: string) {
     experience: staff.experience,
     rating: avgRating,
     reviewCount: reviews.length,
+    ratingDistribution: ratingDist,
+    reviews: reviews.slice(0, 10).map((r) => ({
+      rating: r.rating,
+      comment: r.comment,
+      date: r.createdAt.toISOString(),
+      customerName: r.customer.user.name,
+      customerAvatar: r.customer.user.avatar,
+    })),
     services: staff.skills.map((sk) => ({
       id: sk.service.id,
       name: sk.service.name,

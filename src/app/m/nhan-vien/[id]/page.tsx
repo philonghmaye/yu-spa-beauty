@@ -60,6 +60,88 @@ export default async function StaffDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
+      {/* Reviews Section */}
+      <div style={{ padding: '0 16px 16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Đánh giá</h2>
+          {staff.reviewCount > 0 && (
+            <span style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600 }}>Xem tất cả →</span>
+          )}
+        </div>
+
+        {/* Rating Summary Card */}
+        <div style={{
+          background: 'var(--neutral-50)', borderRadius: 12, padding: 20, marginBottom: 16,
+        }}>
+          <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
+            {/* Left: Score */}
+            <div style={{ textAlign: 'center', minWidth: 80 }}>
+              <div style={{ fontSize: '2.2rem', fontWeight: 800, lineHeight: 1 }}>{staff.rating}</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--neutral-400)', marginTop: 2 }}>/ 5</div>
+              <div style={{ color: '#f59e0b', fontSize: '0.85rem', marginTop: 4 }}>
+                {'★'.repeat(Math.round(staff.rating))}{'☆'.repeat(5 - Math.round(staff.rating))}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--neutral-400)', marginTop: 2 }}>
+                ({staff.reviewCount} đánh giá)
+              </div>
+            </div>
+            {/* Right: Distribution Bars */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {[5, 4, 3, 2, 1].map((star) => {
+                const count = staff.ratingDistribution[star - 1];
+                const pct = staff.reviewCount > 0 ? (count / staff.reviewCount) * 100 : 0;
+                return (
+                  <div key={star} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 600, width: 12 }}>{star}</span>
+                    <span style={{ color: '#f59e0b', fontSize: '0.78rem' }}>★</span>
+                    <div style={{ flex: 1, height: 8, background: 'var(--neutral-200)', borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: '#f59e0b', borderRadius: 4, transition: 'width 0.5s' }} />
+                    </div>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--neutral-400)', width: 28, textAlign: 'right' }}>{pct > 0 ? `${Math.round(pct)}%` : '0%'}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Individual Reviews */}
+        {staff.reviews.length > 0 ? staff.reviews.map((review, i) => (
+          <div key={i} style={{
+            borderBottom: i < staff.reviews.length - 1 ? '1px solid var(--neutral-100)' : 'none',
+            paddingBottom: 16, marginBottom: 16,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: '50%', background: 'var(--primary-light)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+                fontWeight: 700, fontSize: '0.85rem', color: 'var(--primary)',
+              }}>
+                {review.customerAvatar ? (
+                  <img src={review.customerAvatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : review.customerName.charAt(0)}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{review.customerName}</div>
+                <div style={{ color: '#f59e0b', fontSize: '0.75rem' }}>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</div>
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--neutral-400)' }}>
+                {new Date(review.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+              </div>
+            </div>
+            {review.comment && (
+              <p style={{ fontSize: '0.88rem', color: 'var(--neutral-600)', lineHeight: 1.6, margin: 0 }}>
+                {review.comment}
+              </p>
+            )}
+          </div>
+        )) : (
+          <p style={{ textAlign: 'center', color: 'var(--neutral-400)', fontSize: '0.88rem', padding: '20px 0' }}>
+            Chưa có đánh giá nào
+          </p>
+        )}
+      </div>
+
       {/* Services */}
       <StaffBooking
         staffId={staff.id}
