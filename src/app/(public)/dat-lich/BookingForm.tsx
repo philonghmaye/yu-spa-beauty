@@ -335,8 +335,13 @@ export default function BookingForm({
                     background: 'var(--primary-light)', display: 'flex',
                     alignItems: 'center', justifyContent: 'center',
                     margin: '0 auto 12px', fontSize: '1.3rem', color: 'var(--primary)',
+                    overflow: 'hidden',
                   }}>
-                    <FiUser />
+                    {s.user.avatar ? (
+                      <img src={s.user.avatar} alt={s.user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <FiUser />
+                    )}
                   </div>
                   <div style={{ fontWeight: 600 }}>{s.user.name}</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--neutral-400)', marginTop: '4px' }}>

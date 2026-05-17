@@ -51,7 +51,7 @@ export default async function BookingPage() {
           }))}
           staff={staff.map((s) => ({
             id: s.id,
-            user: { name: s.user.name, avatar: s.user.avatar },
+            user: { name: s.user.name, avatar: s.images?.[0]?.url || s.user.avatar },
             skills: s.skills.map((sk) => ({
               service: { id: sk.service.id, name: sk.service.name },
             })),

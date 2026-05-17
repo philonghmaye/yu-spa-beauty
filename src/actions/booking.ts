@@ -19,6 +19,7 @@ export async function getBookingData() {
       where: { isAvailable: true, user: { isActive: true } },
       include: {
         user: { select: { name: true, avatar: true } },
+        images: { orderBy: { sortOrder: 'asc' }, take: 1, select: { url: true } },
         skills: { include: { service: { select: { id: true, name: true } } } },
         schedules: { where: { isActive: true } },
       },
