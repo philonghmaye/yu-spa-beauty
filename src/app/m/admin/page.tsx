@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { formatCurrency, getVietnamToday, getVietnamNow, getStatusLabel } from '@/lib/utils';
 import Link from 'next/link';
 import { FiCalendar, FiUsers, FiDollarSign, FiTrendingUp, FiClock, FiChevronRight, FiHome } from 'react-icons/fi';
+import AdminNotificationBell from '../AdminNotificationBell';
 
 async function getStats() {
   const today = getVietnamToday();
@@ -54,20 +55,22 @@ export default async function AdminMobileDashboard() {
         <div style={{ fontSize: '0.82rem', opacity: 0.85 }}>Xin chào, Admin 👋</div>
         <h1 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '4px 0 0', letterSpacing: '0.5px', color: '#fbcfe8' }}>✨ YURI SPA BEAUTY</h1>
         <div style={{ fontSize: '0.78rem', opacity: 0.7, marginTop: 2 }}>Bảng điều khiển quản lý</div>
-        <Link
-          href="/m"
-          style={{
-            position: 'absolute', top: 18, right: 16,
-            width: 38, height: 38, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontSize: '1.15rem',
-            border: '1px solid rgba(255,255,255,0.3)',
-          }}
-          title="Trang chủ"
-        >
-          <FiHome />
-        </Link>
+        <div style={{ position: 'absolute', top: 18, right: 16, display: 'flex', gap: 8 }}>
+          <AdminNotificationBell />
+          <Link
+            href="/m"
+            style={{
+              width: 38, height: 38, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.15)', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontSize: '1.15rem',
+              border: '1px solid rgba(255,255,255,0.3)',
+            }}
+            title="Trang chủ"
+          >
+            <FiHome />
+          </Link>
+        </div>
       </div>
 
       {/* Stats Grid */}
