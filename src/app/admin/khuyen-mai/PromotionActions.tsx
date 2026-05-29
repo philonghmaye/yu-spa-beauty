@@ -118,11 +118,15 @@ export default function PromotionActions({
   };
 
   const handleDelete = async () => {
-    if (!promotion || !confirm('Bạn có chắc muốn xóa khuyến mãi này?')) return;
+    if (!promotion) return;
+    if (!confirm('Bạn có chắc muốn xóa khuyến mãi này?')) return;
     try {
       await deletePromotion(promotion.id);
       toast.success('Đã xóa khuyến mãi');
-    } catch { toast.error('Có lỗi xảy ra'); }
+    } catch (err) {
+      console.error('Delete promotion error:', err);
+      toast.error(err instanceof Error ? err.message : 'Có lỗi xảy ra');
+    }
   };
 
   if (mode === 'header') {

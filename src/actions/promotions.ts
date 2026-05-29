@@ -87,7 +87,13 @@ export async function updatePromotion(id: string, data: {
 }
 
 export async function deletePromotion(id: string) {
-  await prisma.promotion.update({ where: { id }, data: { isActive: false } });
+  await requireAdmin();
+  // Gỡ liên kết lịch hẹn đã dùng mã
+  await prisma.appointment.updateMany({
+    where: { promotionId: id },
+    data: { promotionId: null },
+  });
+  await prisma.promotion.delete({ where: { id } });
   revalidatePath('/admin/khuyen-mai');
 }
 

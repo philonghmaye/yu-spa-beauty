@@ -130,7 +130,15 @@ export async function createAppointmentAdmin(data: {
 
 export async function deleteAppointment(id: string) {
   await requireAdmin();
+
+  // Xóa tất cả bản ghi liên quan
+  await prisma.review.deleteMany({ where: { appointmentId: id } });
+  await prisma.notification.deleteMany({ where: { appointmentId: id } });
+  await prisma.payment.deleteMany({ where: { appointmentId: id } });
+  await prisma.appointmentService.deleteMany({ where: { appointmentId: id } });
+
   await prisma.appointment.delete({ where: { id } });
+
   revalidatePath('/admin/lich-hen');
   revalidatePath('/admin');
 }

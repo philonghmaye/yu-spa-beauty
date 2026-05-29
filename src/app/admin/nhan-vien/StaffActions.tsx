@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { FiPlus, FiEdit2, FiUserX, FiUserCheck } from 'react-icons/fi';
-import { createStaff, updateStaff, toggleStaffActive, updateStaffSkills } from '@/actions/staff';
+import { FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { createStaff, updateStaff, deleteStaff, updateStaffSkills } from '@/actions/staff';
 import toast from 'react-hot-toast';
 
 type ServiceInfo = { id: string; name: string; category: string };
@@ -25,8 +25,6 @@ export default function StaffActions({ mode, allServices, employee }: Props) {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [position, setPosition] = useState('');
   const [bio, setBio] = useState('');
   const [experience, setExperience] = useState('');
@@ -37,7 +35,7 @@ export default function StaffActions({ mode, allServices, employee }: Props) {
   useEffect(() => { setMounted(true); }, []);
 
   const resetForm = () => {
-    setName(''); setPhone(''); setEmail(''); setPassword('');
+    setName(''); setPhone('');
     setPosition(''); setBio(''); setExperience('');
     setSelectedSkills([]); setIsEditing(false);
   };
@@ -47,7 +45,7 @@ export default function StaffActions({ mode, allServices, employee }: Props) {
   const openEdit = () => {
     if (!employee) return;
     setIsEditing(true);
-    setName(employee.name); setPhone(employee.phone); setEmail(employee.email);
+    setName(employee.name); setPhone(employee.phone);
     setPosition(employee.position); setBio(employee.bio);
     setExperience(employee.experience?.toString() || '');
     setSelectedSkills(employee.skillIds);
@@ -65,15 +63,14 @@ export default function StaffActions({ mode, allServices, employee }: Props) {
     try {
       if (isEditing && employee) {
         await updateStaff(employee.id, {
-          name, phone, email, position, bio,
+          name, phone, position, bio,
           experience: experience ? parseInt(experience) : undefined,
         });
         await updateStaffSkills(employee.id, selectedSkills);
         toast.success('Cập nhật thành công!');
       } else {
-        if (!password || password.length < 6) { toast.error('Mật khẩu tối thiểu 6 ký tự'); setLoading(false); return; }
         await createStaff({
-          name, phone, email, password, position, bio,
+          name, phone, position, bio,
           experience: experience ? parseInt(experience) : undefined,
           skillServiceIds: selectedSkills,
         });
@@ -87,11 +84,12 @@ export default function StaffActions({ mode, allServices, employee }: Props) {
     setLoading(false);
   };
 
-  const handleToggleActive = async () => {
+  const handleDelete = async () => {
     if (!employee) return;
+    if (!confirm(`Bạn có chắc muốn xóa nhân viên "${employee.name}"?`)) return;
     try {
-      await toggleStaffActive(employee.id);
-      toast.success(employee.isActive ? 'Đã cho nghỉ' : 'Đã kích hoạt');
+      await deleteStaff(employee.id);
+      toast.success('Đã xóa nhân viên');
     } catch { toast.error('Có lỗi xảy ra'); }
   };
 
@@ -119,18 +117,6 @@ export default function StaffActions({ mode, allServices, employee }: Props) {
               <input className="form-input" value={phone} onChange={e => setPhone(e.target.value)} required />
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div className="form-group">
-              <label className="form-label">Email</label>
-              <input type="email" className="form-input" value={email} onChange={e => setEmail(e.target.value)} />
-            </div>
-            {!isEditing && (
-              <div className="form-group">
-                <label className="form-label">Mật khẩu *</label>
-                <input type="password" className="form-input" value={password} onChange={e => setPassword(e.target.value)} placeholder="Tối thiểu 6 ký tự" />
-              </div>
-            )}
-          </div>
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
             <div className="form-group">
               <label className="form-label">Vị trí</label>
@@ -148,19 +134,73 @@ export default function StaffActions({ mode, allServices, employee }: Props) {
 
           {/* Skills */}
           <div className="form-group">
-            <label className="form-label">Kỹ năng dịch vụ</label>
-            <div style={{ border: '1px solid var(--neutral-200)', borderRadius: 'var(--radius-sm)', padding: '12px', maxHeight: '200px', overflowY: 'auto' }}>
-              {Object.entries(servicesByCategory).map(([cat, items]) => (
-                <div key={cat} style={{ marginBottom: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--neutral-600)', marginBottom: '6px' }}>{cat}</div>
-                  {items.map(s => (
-                    <label key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={selectedSkills.includes(s.id)} onChange={() => toggleSkill(s.id)} style={{ accentColor: 'var(--primary)' }} />
-                      <span style={{ fontSize: '0.9rem' }}>{s.name}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <label className="form-label" style={{ marginBottom: 0 }}>Kỹ năng dịch vụ</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSkills(allServices.map(s => s.id))}
+                  style={{
+                    padding: '4px 12px', borderRadius: 'var(--radius-full)', border: '1px solid var(--primary)',
+                    background: 'var(--primary-50)', color: 'var(--primary-dark)', fontSize: '0.75rem',
+                    fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                  }}
+                >
+                  ✓ Chọn tất cả
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSkills([])}
+                  style={{
+                    padding: '4px 12px', borderRadius: 'var(--radius-full)', border: '1px solid var(--neutral-300)',
+                    background: 'var(--neutral-50)', color: 'var(--neutral-600)', fontSize: '0.75rem',
+                    fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                  }}
+                >
+                  ✕ Bỏ chọn
+                </button>
+              </div>
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--neutral-400)', marginBottom: '8px' }}>
+              Đã chọn: {selectedSkills.length}/{allServices.length} dịch vụ
+            </div>
+            <div style={{ border: '1px solid var(--neutral-200)', borderRadius: 'var(--radius-sm)', padding: '12px', maxHeight: '250px', overflowY: 'auto' }}>
+              {Object.entries(servicesByCategory).map(([cat, items]) => {
+                const allCatSelected = items.every(s => selectedSkills.includes(s.id));
+                const someCatSelected = items.some(s => selectedSkills.includes(s.id));
+                return (
+                  <div key={cat} style={{ marginBottom: '14px' }}>
+                    <label style={{
+                      display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', cursor: 'pointer',
+                      padding: '4px 8px', borderRadius: 'var(--radius-sm)',
+                      background: someCatSelected ? 'var(--primary-50)' : 'var(--neutral-50)',
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={allCatSelected}
+                        ref={el => { if (el) el.indeterminate = someCatSelected && !allCatSelected; }}
+                        onChange={() => {
+                          if (allCatSelected) {
+                            setSelectedSkills(prev => prev.filter(id => !items.some(s => s.id === id)));
+                          } else {
+                            setSelectedSkills(prev => [...new Set([...prev, ...items.map(s => s.id)])]);
+                          }
+                        }}
+                        style={{ accentColor: 'var(--primary)' }}
+                      />
+                      <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--neutral-700)' }}>
+                        {cat} ({items.filter(s => selectedSkills.includes(s.id)).length}/{items.length})
+                      </span>
                     </label>
-                  ))}
-                </div>
-              ))}
+                    {items.map(s => (
+                      <label key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '3px 0 3px 24px', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={selectedSkills.includes(s.id)} onChange={() => toggleSkill(s.id)} style={{ accentColor: 'var(--primary)' }} />
+                        <span style={{ fontSize: '0.85rem' }}>{s.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -189,13 +229,10 @@ export default function StaffActions({ mode, allServices, employee }: Props) {
 
   return (
     <>
-      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-        <span className={`badge ${employee?.isActive ? 'badge-success' : 'badge-error'}`}>
-          {employee?.isActive ? 'Đang làm' : 'Nghỉ'}
-        </span>
-        <button className="btn btn-ghost btn-sm" style={{ padding: '4px 10px' }} onClick={openEdit}><FiEdit2 /></button>
-        <button className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', color: employee?.isActive ? 'var(--error)' : 'var(--success)' }} onClick={handleToggleActive}>
-          {employee?.isActive ? <FiUserX /> : <FiUserCheck />}
+      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
+        <button className="btn btn-ghost btn-sm" style={{ padding: '4px 10px' }} onClick={openEdit} title="Sửa"><FiEdit2 /></button>
+        <button className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', color: 'var(--error)' }} onClick={handleDelete} title="Xóa nhân viên">
+          <FiTrash2 />
         </button>
       </div>
       {portalModal}

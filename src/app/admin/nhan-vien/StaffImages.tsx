@@ -28,8 +28,8 @@ export default function StaffImages({ employeeId, images }: { employeeId: string
         const res = await fetch('/api/upload', { method: 'POST', body: formData });
         const data = await res.json();
         if (data.url) {
-          await addStaffImage(employeeId, data.url);
-          setCurrentImages(prev => [...prev, { id: Date.now().toString(), url: data.url, sortOrder: prev.length }]);
+          const newImage = await addStaffImage(employeeId, data.url);
+          setCurrentImages(prev => [...prev, { id: newImage.id, url: data.url, sortOrder: prev.length }]);
         }
       }
       toast.success('Đã tải ảnh lên!');
@@ -40,15 +40,19 @@ export default function StaffImages({ employeeId, images }: { employeeId: string
     if (fileRef.current) fileRef.current.value = '';
   };
 
+  const [deleting, setDeleting] = useState<string | null>(null);
+
   const handleDelete = async (imageId: string) => {
-    if (!confirm('Xóa ảnh này?')) return;
+    setDeleting(imageId);
     try {
       await removeStaffImage(imageId);
       setCurrentImages(prev => prev.filter(img => img.id !== imageId));
       toast.success('Đã xóa ảnh');
-    } catch {
+    } catch (err) {
+      console.error('Delete image error:', err);
       toast.error('Lỗi xóa ảnh');
     }
+    setDeleting(null);
   };
 
   const modal = showModal ? (
@@ -73,15 +77,16 @@ export default function StaffImages({ employeeId, images }: { employeeId: string
         {/* Image Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {currentImages.map(img => (
-            <div key={img.id} style={{ position: 'relative', aspectRatio: '1', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
+            <div key={img.id} style={{ position: 'relative', aspectRatio: '1', borderRadius: 'var(--radius-sm)', overflow: 'hidden', opacity: deleting === img.id ? 0.4 : 1 }}>
               <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               <button
-                onClick={() => handleDelete(img.id)}
+                onClick={(e) => { e.stopPropagation(); handleDelete(img.id); }}
+                disabled={deleting === img.id}
                 style={{
-                  position: 'absolute', top: 4, right: 4, width: 24, height: 24,
+                  position: 'absolute', top: 6, right: 6, width: 28, height: 28,
                   borderRadius: '50%', background: 'rgba(239,68,68,0.9)', color: '#fff',
                   border: 'none', cursor: 'pointer', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem',
+                  alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem',
                 }}
               >
                 <FiX />

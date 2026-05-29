@@ -29,17 +29,18 @@ export async function getStaffById(id: string) {
 }
 
 export async function createStaff(data: {
-  name: string; phone: string; email?: string; password: string;
+  name: string; phone: string;
   position?: string; bio?: string; experience?: number;
   skillServiceIds?: string[];
 }) {
-  const hashedPassword = await bcrypt.hash(data.password, 10);
+  // Nhân viên không cần đăng nhập — tạo password ngẫu nhiên
+  const randomPass = Math.random().toString(36).slice(-10);
+  const hashedPassword = await bcrypt.hash(randomPass, 10);
 
   const user = await prisma.user.create({
     data: {
       name: data.name,
       phone: data.phone,
-      email: data.email || null,
       password: hashedPassword,
       role: 'STAFF',
       employee: {
@@ -69,9 +70,8 @@ export async function createStaff(data: {
 }
 
 export async function updateStaff(employeeId: string, data: {
-  name?: string; phone?: string; email?: string;
+  name?: string; phone?: string;
   position?: string; bio?: string; experience?: number;
-  isActive?: boolean;
 }) {
   const employee = await prisma.employee.findUnique({ where: { id: employeeId } });
   if (!employee) throw new Error('Employee not found');
@@ -82,8 +82,6 @@ export async function updateStaff(employeeId: string, data: {
     data: {
       name: data.name,
       phone: data.phone,
-      email: data.email || null,
-      isActive: data.isActive,
     },
   });
 
@@ -139,9 +137,33 @@ export async function updateStaffSchedule(employeeId: string, schedules: { dayOf
 }
 
 export async function deleteStaff(employeeId: string) {
-  const employee = await prisma.employee.findUnique({ where: { id: employeeId } });
+  const employee = await prisma.employee.findUnique({
+    where: { id: employeeId },
+    include: { appointments: { select: { id: true } } },
+  });
   if (!employee) throw new Error('Employee not found');
-  await prisma.user.update({ where: { id: employee.userId }, data: { isActive: false } });
+
+  // Xóa notifications liên quan đến lịch hẹn của nhân viên
+  if (employee.appointments.length > 0) {
+    const appointmentIds = employee.appointments.map(a => a.id);
+    await prisma.notification.deleteMany({
+      where: { appointmentId: { in: appointmentIds } },
+    });
+  }
+
+  // Gỡ liên kết lịch hẹn (giữ lịch sử nhưng bỏ nhân viên)
+  await prisma.appointment.updateMany({
+    where: { employeeId },
+    data: { employeeId: null },
+  });
+
+  // Xóa toàn bộ dữ liệu liên quan
+  await prisma.employeeImage.deleteMany({ where: { employeeId } });
+  await prisma.employeeSkill.deleteMany({ where: { employeeId } });
+  await prisma.workSchedule.deleteMany({ where: { employeeId } });
+  await prisma.employee.delete({ where: { id: employeeId } });
+  await prisma.user.delete({ where: { id: employee.userId } });
+
   revalidatePath('/admin/nhan-vien');
 }
 
@@ -159,11 +181,12 @@ export async function addStaffImage(employeeId: string, url: string) {
     where: { employeeId },
     orderBy: { sortOrder: 'desc' },
   });
-  await prisma.employeeImage.create({
+  const image = await prisma.employeeImage.create({
     data: { employeeId, url, sortOrder: (maxOrder?.sortOrder || 0) + 1 },
   });
   revalidatePath('/admin/nhan-vien');
   revalidatePath('/m');
+  return image;
 }
 
 export async function removeStaffImage(imageId: string) {

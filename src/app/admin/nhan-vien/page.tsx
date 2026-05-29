@@ -55,10 +55,10 @@ export default async function StaffAdminPage() {
                   {emp.user.phone} {emp.experience ? `• ${emp.experience} năm KN` : ''}
                 </p>
 
-                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '16px' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--neutral-500)', marginBottom: '16px' }}>
                   {emp.skills.length > 0
-                    ? emp.skills.map(sk => <span key={sk.service.id} className="badge badge-accent">{sk.service.name}</span>)
-                    : <span style={{ color: 'var(--neutral-400)', fontSize: '0.85rem' }}>Chưa gán kỹ năng</span>
+                    ? <span className="badge badge-accent">🛠️ {emp.skills.length} dịch vụ</span>
+                    : <span style={{ color: 'var(--neutral-400)' }}>Chưa gán kỹ năng</span>
                   }
                 </div>
 
