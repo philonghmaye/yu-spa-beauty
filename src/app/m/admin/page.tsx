@@ -86,10 +86,10 @@ export default async function AdminMobileDashboard() {
         <div style={{ background: '#fff', borderRadius: 12, padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b' }}><FiClock /></div>
-            <span style={{ fontSize: '0.75rem', color: '#888' }}>Chờ xử lý</span>
+            <span style={{ fontSize: '0.75rem', color: '#888' }}>Chờ xác nhận</span>
           </div>
           <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f59e0b' }}>{stats.pendingCount}</div>
-          <div style={{ fontSize: '0.72rem', color: '#999' }}>đang chờ</div>
+          <div style={{ fontSize: '0.72rem', color: '#999' }}>chờ xác nhận</div>
         </div>
         <div style={{ background: '#fff', borderRadius: 12, padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
