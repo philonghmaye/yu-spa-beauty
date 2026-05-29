@@ -87,7 +87,7 @@ export default async function MobileHomePage() {
 
       {/* Hero Service Cards */}
       <div style={{ padding: '0 16px' }}>
-        {/* Main Card - Dịch vụ làm đẹp & Spa */}
+        {/* Main Card - Dịch vụ làm đẹp & Spa → Chọn nhân viên trước */}
         <Link href="/m/kham-pha" style={{ textDecoration: 'none', color: 'inherit' }}>
           <div style={{
             borderRadius: 'var(--radius-lg)', overflow: 'hidden',
@@ -100,7 +100,7 @@ export default async function MobileHomePage() {
                 Dịch vụ làm đẹp & Spa
               </h2>
               <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.85rem', marginBottom: 14, textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-                {categories.length}+ dịch vụ đa dạng
+                Chọn kỹ thuật viên yêu thích của bạn
               </p>
               <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', backdropFilter: 'blur(4px)' }}>
                 <FiArrowRight />
@@ -113,9 +113,9 @@ export default async function MobileHomePage() {
       {/* Service Category Chips */}
       <div style={{ padding: '20px 16px 8px' }}>
         <h3 style={{ fontSize: '1.05rem', marginBottom: 12 }}>Dịch vụ nổi bật</h3>
-        <div className="m-filters" style={{ padding: 0 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {categories.map(cat => (
-            <Link key={cat.id} href="/m/kham-pha" className="m-chip" style={{ textDecoration: 'none' }}>
+            <Link key={cat.id} href={`/m/dich-vu/${cat.slug}`} className="m-chip" style={{ textDecoration: 'none' }}>
               {cat.icon} {cat.name}
             </Link>
           ))}
