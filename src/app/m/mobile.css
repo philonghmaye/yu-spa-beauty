@@ -1,5 +1,10 @@
 /* ===== MOBILE APP (PWA) — Phase 3 ===== */
 
+/* Global reset: remove blue focus outlines & link decoration */
+.mobile-app *:focus { outline: none; }
+.mobile-app a { text-decoration: none; color: inherit; outline: none; }
+.mobile-app a:focus, .mobile-app a:active { outline: none; }
+
 /* Mobile Layout */
 .mobile-app {
   max-width: 480px;
