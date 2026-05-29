@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { FiEdit2, FiSearch } from 'react-icons/fi';
-import { updateCustomerNotes, updateCustomerLevel } from '@/actions/customers';
+import { FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { updateCustomerNotes, updateCustomerLevel, deleteCustomer } from '@/actions/customers';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
@@ -23,6 +23,7 @@ export default function CustomerActions({ mode, customerId, currentLevel, curren
   const [note, setNote] = useState(currentNotes || '');
   const [search, setSearch] = useState('');
   const [mounted, setMounted] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const router = useRouter();
 
   useEffect(() => { setMounted(true); }, []);
@@ -51,6 +52,19 @@ export default function CustomerActions({ mode, customerId, currentLevel, curren
       toast.success('Đã lưu ghi chú');
       setShowNote(false);
     } catch { toast.error('Có lỗi xảy ra'); }
+  };
+
+  const handleDelete = async () => {
+    if (!customerId) return;
+    if (!confirm(`Bạn có chắc muốn xóa khách hàng "${customerName}"? Hành động này không thể hoàn tác.`)) return;
+    setDeleting(true);
+    try {
+      await deleteCustomer(customerId);
+      toast.success('Đã xóa khách hàng');
+    } catch {
+      toast.error('Không thể xóa (khách hàng có lịch hẹn)');
+    }
+    setDeleting(false);
   };
 
   // Default: search bar
@@ -83,7 +97,7 @@ export default function CustomerActions({ mode, customerId, currentLevel, curren
     );
   }
 
-  // Row actions — modal uses Portal to avoid layout shift inside <td>
+  // Row actions
   if (mode === 'actions') {
     const modalContent = showNote ? (
       <div className="modal-overlay" onClick={() => setShowNote(false)}>
@@ -104,12 +118,21 @@ export default function CustomerActions({ mode, customerId, currentLevel, curren
     ) : null;
 
     return (
-      <>
+      <div style={{ display: 'flex', gap: '4px' }}>
         <button className="btn btn-ghost btn-sm" style={{ padding: '4px 10px' }} onClick={() => setShowNote(!showNote)} title="Ghi chú">
           <FiEdit2 />
         </button>
+        <button
+          className="btn btn-ghost btn-sm"
+          style={{ padding: '4px 10px', color: 'var(--error)' }}
+          onClick={handleDelete}
+          disabled={deleting}
+          title="Xóa khách hàng"
+        >
+          <FiTrash2 />
+        </button>
         {mounted && modalContent ? createPortal(modalContent, document.body) : null}
-      </>
+      </div>
     );
   }
 

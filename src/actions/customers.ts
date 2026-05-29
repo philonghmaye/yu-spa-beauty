@@ -65,3 +65,22 @@ export async function getCustomerStats() {
   });
   return { total, thisMonth, levels };
 }
+
+export async function deleteCustomer(customerId: string) {
+  await requireAdmin();
+  const customer = await prisma.customer.findUnique({
+    where: { id: customerId },
+    select: { userId: true, user: { select: { role: true } } },
+  });
+  if (!customer) throw new Error('Không tìm thấy khách hàng');
+
+  // Delete customer record
+  await prisma.customer.delete({ where: { id: customerId } });
+
+  // Only delete user account if NOT admin
+  if (customer.user.role !== 'ADMIN') {
+    await prisma.user.delete({ where: { id: customer.userId } });
+  }
+
+  revalidatePath('/admin/khach-hang');
+}

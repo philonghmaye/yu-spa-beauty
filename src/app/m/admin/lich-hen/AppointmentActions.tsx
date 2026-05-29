@@ -9,13 +9,8 @@ const statusFlow: Record<string, { next: string; label: string; color: string }[
     { next: 'CONFIRMED', label: 'Xác nhận', color: '#3b82f6' },
     { next: 'CANCELLED', label: 'Hủy', color: '#ef4444' },
   ],
-  CONFIRMED: [
-    { next: 'IN_PROGRESS', label: 'Bắt đầu', color: '#8b5cf6' },
-    { next: 'CANCELLED', label: 'Hủy', color: '#ef4444' },
-  ],
-  IN_PROGRESS: [
-    { next: 'COMPLETED', label: 'Hoàn thành', color: '#22c55e' },
-  ],
+  CONFIRMED: [],
+  IN_PROGRESS: [],
   COMPLETED: [],
   CANCELLED: [],
 };
