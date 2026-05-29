@@ -101,7 +101,7 @@
   display: flex; gap: 14px; padding: 16px;
   margin: 0 16px 12px; background: var(--white);
   border-radius: var(--radius-lg); border: 1px solid var(--neutral-100);
-  position: relative;
+  position: relative; outline: none;
 }
 .m-staff-img {
   width: 100px; height: 120px; border-radius: var(--radius);

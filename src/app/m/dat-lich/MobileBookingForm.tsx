@@ -30,7 +30,6 @@ export default function MobileBookingForm({
 }) {
   const router = useRouter();
   const [booking, setBooking] = useState<BookingData | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState('CASH');
   const [promoCode, setPromoCode] = useState('');
   const [promoResult, setPromoResult] = useState<{ valid: boolean; discountAmount?: number; error?: string } | null>(null);
   const [promoLoading, setPromoLoading] = useState(false);
@@ -99,30 +98,6 @@ export default function MobileBookingForm({
         promoCode: promoResult?.valid ? promoCode.trim() : undefined,
         userId,
       });
-
-      // Handle MoMo payment
-      if (paymentMethod === 'MOMO') {
-        const momoRes = await fetch('/api/payment/momo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: total,
-            orderId: `YURI-${result.id}-${Date.now()}`,
-            orderInfo: `Đặt lịch ${booking.service.name} - YURI SPA BEAUTY`,
-          }),
-        });
-        const momoData = await momoRes.json();
-        if (momoData.payUrl) {
-          sessionStorage.setItem('mobileBookingResult', JSON.stringify(result));
-          sessionStorage.removeItem('mobileBooking');
-          window.location.href = momoData.payUrl;
-          return;
-        } else {
-          toast.error(momoData.error || 'Không thể kết nối MoMo');
-          setSubmitting(false);
-          return;
-        }
-      }
 
       sessionStorage.setItem('mobileBookingResult', JSON.stringify(result));
       sessionStorage.removeItem('mobileBooking');
@@ -205,23 +180,10 @@ export default function MobileBookingForm({
 
         {/* Payment Method */}
         <div className="m-booking-section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div className="m-booking-section-title" style={{ marginBottom: 0 }}>Phương thức thanh toán</div>
-          </div>
-          <div className={`m-payment-option ${paymentMethod === 'CASH' ? 'active' : ''}`} onClick={() => setPaymentMethod('CASH')}>
+          <div className="m-booking-section-title">Phương thức thanh toán</div>
+          <div className="m-payment-option active">
             <div className="icon">💰</div>
-            <div className="label">Tiền mặt</div>
-            <div className="radio" />
-          </div>
-          <div className={`m-payment-option ${paymentMethod === 'MOMO' ? 'active' : ''}`} onClick={() => setPaymentMethod('MOMO')}>
-            <div className="icon" style={{ background: '#ae2070', color: '#fff', fontWeight: 700, fontSize: '0.7rem' }}>M</div>
-            <div className="label">Ví MoMo</div>
-            <div className="radio" />
-          </div>
-          <div className={`m-payment-option ${paymentMethod === 'VNPAY' ? 'active' : ''}`} onClick={() => setPaymentMethod('VNPAY')}>
-            <div className="icon">💳</div>
-            <div className="label">VNPay</div>
-            <div className="radio" />
+            <div className="label">Thanh toán tại quầy</div>
           </div>
         </div>
 
