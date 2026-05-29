@@ -13,7 +13,7 @@ async function getStats() {
 
   const [todayCount, pendingCount, totalCustomers, monthCompleted, activeStaff] = await Promise.all([
     prisma.appointment.count({ where: { appointmentDate: today } }),
-    prisma.appointment.count({ where: { status: { in: ['PENDING', 'CONFIRMED'] } } }),
+    prisma.appointment.count({ where: { status: 'PENDING' } }),
     prisma.customer.count(),
     prisma.appointment.findMany({ where: { status: 'COMPLETED', appointmentDate: { gte: monthStart } } }),
     prisma.employee.count({ where: { isAvailable: true, user: { isActive: true } } }),
