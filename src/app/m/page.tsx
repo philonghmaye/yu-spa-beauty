@@ -2,30 +2,23 @@ import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { FiMessageCircle, FiArrowRight, FiStar } from 'react-icons/fi';
+import { FiMessageCircle, FiArrowRight, FiStar, FiSettings } from 'react-icons/fi';
 
 export default async function MobileHomePage() {
   const session = await auth();
 
-  // Redirect admin to admin dashboard
+  // Get user info if logged in
+  let userName = '';
+  let isAdmin = false;
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { name: true, avatar: true, role: true },
     });
-    if (user?.role === 'ADMIN') {
-      redirect('/m/admin');
+    if (user) {
+      userName = user.name;
+      isAdmin = user.role === 'ADMIN';
     }
-  }
-
-  // Get user info if logged in
-  let userName = '';
-  if (session?.user?.id) {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { name: true, avatar: true },
-    });
-    if (user) userName = user.name;
   }
 
   // Get service categories for cards
@@ -73,6 +66,11 @@ export default async function MobileHomePage() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
+          {isAdmin && (
+            <Link href="/m/admin" style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.95rem' }} title="Quản lý lịch hẹn">
+              <FiSettings />
+            </Link>
+          )}
           <Link href="/m/hoat-dong" style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--neutral-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--neutral-600)' }}>
             <FiMessageCircle />
           </Link>

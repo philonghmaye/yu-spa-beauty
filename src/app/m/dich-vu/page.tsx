@@ -4,24 +4,37 @@ import prisma from '@/lib/prisma';
 import Link from 'next/link';
 import { FiArrowLeft, FiChevronRight } from 'react-icons/fi';
 
-// Default gradient colors for categories
-const categoryGradients = [
-  'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
-  'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-  'linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)',
-  'linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%)',
-  'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
-  'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)',
-];
-
-const categoryIcons: Record<string, string> = {
-  nails: '💅',
-  'cham-soc-da': '✨',
-  'noi-mi': '👁️',
-  massage: '💆',
-  'goi-dau': '🧴',
-  'trang-diem': '💄',
+// Category images mapped by slug — all 23 categories
+const categoryImages: Record<string, string> = {
+  'nails':                  '/images/cat-nails.png',
+  'noi-mi':                 '/images/cat-eyelash.png',
+  'massage':                '/images/cat-massage.png',
+  'cham-soc-da':            '/images/cat-skincare.png',
+  'lieu-trinh':             '/images/cat-lieu-trinh.png',
+  'cham-soc-toc':           '/images/cat-hair.png',
+  'dich-vu-khac':           '/images/cat-other.png',
+  'tiem-filler-botox':      '/images/cat-filler-botox.png',
+  'triet-long':             '/images/cat-hair-removal.png',
+  'giam-beo':               '/images/cat-slimming.png',
+  'phun-xam':               '/images/cat-tattoo.png',
+  'tam-trang-duong-da':     '/images/cat-whitening.png',
+  'tri-lieu-cong-nghe-cao': '/images/cat-high-tech.png',
+  'dac-tri-da-nhon-mun':    '/images/cat-acne.png',
+  'wax-long':               '/images/cat-waxing.png',
+  'hifu-therapy':           '/images/cat-hifu.png',
+  'laser-pink':             '/images/cat-laser-pink.png',
+  'thermage-flx':           '/images/cat-thermage.png',
+  'tri-lieu-vung-mat':      '/images/cat-eye-treatment.png',
+  'dieu-tri-nam-white-hd':  '/images/cat-melasma.png',
+  'thuoc-juvederm':         '/images/cat-juvederm.png',
+  'thuoc-neauvia':          '/images/cat-neauvia.png',
+  'thuoc-korean':           '/images/cat-korean.png',
 };
+
+function getCategoryImage(slug: string, dbImage: string | null): string {
+  if (dbImage) return dbImage;
+  return categoryImages[slug] || '/images/cat-default.png';
+}
 
 export default async function ServiceCatalogPage() {
   const categories = await prisma.category.findMany({
@@ -36,8 +49,6 @@ export default async function ServiceCatalogPage() {
     orderBy: { sortOrder: 'asc' },
   });
 
-  const totalServices = categories.reduce((sum, c) => sum + c.services.length, 0);
-
   return (
     <>
       {/* Top bar */}
@@ -48,25 +59,10 @@ export default async function ServiceCatalogPage() {
         <div className="m-topbar-title">Dịch vụ & Sản phẩm</div>
       </div>
 
-      {/* Hero Banner */}
-      <div className="m-catalog-hero">
-        <div className="m-catalog-hero-content">
-          <h1 className="m-catalog-hero-title">Khám phá dịch vụ</h1>
-          <p className="m-catalog-hero-subtitle">
-            {categories.length} nhóm dịch vụ • {totalServices} dịch vụ đa dạng
-          </p>
-        </div>
-        <div className="m-catalog-hero-deco">
-          <span>💎</span>
-        </div>
-      </div>
-
       {/* Category Grid */}
       <div className="m-catalog-grid">
         {categories.map((cat, index) => {
-          const gradient = categoryGradients[index % categoryGradients.length];
-          const icon = cat.icon || categoryIcons[cat.slug] || '✨';
-          const hasImage = !!cat.image;
+          const image = getCategoryImage(cat.slug, cat.image);
 
           return (
             <Link
@@ -75,35 +71,21 @@ export default async function ServiceCatalogPage() {
               className="m-catalog-card"
               style={{ animationDelay: `${index * 0.08}s` }}
             >
-              {/* Card Header with gradient or image */}
-              <div
-                className="m-catalog-card-header"
-                style={{
-                  background: hasImage ? 'none' : gradient,
-                }}
-              >
-                {hasImage && (
-                  <img
-                    src={cat.image!}
-                    alt={cat.name}
-                    className="m-catalog-card-img"
-                  />
-                )}
+              {/* Card with image */}
+              <div className="m-catalog-card-header">
+                <img
+                  src={image}
+                  alt={cat.name}
+                  className="m-catalog-card-img"
+                />
                 <div className="m-catalog-card-overlay" />
-                <div className="m-catalog-card-icon">{icon}</div>
-                <div className="m-catalog-card-count">
-                  {cat.services.length} dịch vụ
-                </div>
               </div>
 
-              {/* Card Body */}
+              {/* Card Name */}
               <div className="m-catalog-card-body">
                 <div className="m-catalog-card-name">{cat.name}</div>
-                <div className="m-catalog-card-footer">
-                  <span className="m-catalog-card-count-text">{cat.services.length} dịch vụ</span>
-                  <div className="m-catalog-card-arrow">
-                    <FiChevronRight />
-                  </div>
+                <div className="m-catalog-card-arrow">
+                  <FiChevronRight />
                 </div>
               </div>
             </Link>
