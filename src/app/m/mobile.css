@@ -555,7 +555,7 @@
 /* Card Header (image or gradient) */
 .m-catalog-card-header {
   position: relative;
-  height: 110px;
+  height: 90px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -577,7 +577,7 @@
 .m-catalog-card-icon {
   position: relative;
   z-index: 1;
-  font-size: 1.8rem;
+  font-size: 1.2rem;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
 .m-catalog-card-count {
@@ -627,6 +627,11 @@
   font-size: 0.76rem;
   font-weight: 600;
   color: var(--primary);
+}
+.m-catalog-card-count-text {
+  font-size: 0.75rem;
+  color: var(--neutral-400);
+  font-weight: 500;
 }
 .m-catalog-card-arrow {
   width: 26px;

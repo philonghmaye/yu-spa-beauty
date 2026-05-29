@@ -3,7 +3,6 @@ export const dynamic = 'force-dynamic';
 import prisma from '@/lib/prisma';
 import Link from 'next/link';
 import { FiArrowLeft, FiChevronRight } from 'react-icons/fi';
-import { formatCurrency } from '@/lib/utils';
 
 // Default gradient colors for categories
 const categoryGradients = [
@@ -65,12 +64,6 @@ export default async function ServiceCatalogPage() {
       {/* Category Grid */}
       <div className="m-catalog-grid">
         {categories.map((cat, index) => {
-          const minPrice = cat.services.length > 0
-            ? Math.min(...cat.services.map(s => s.price))
-            : 0;
-          const maxPrice = cat.services.length > 0
-            ? Math.max(...cat.services.map(s => s.price))
-            : 0;
           const gradient = categoryGradients[index % categoryGradients.length];
           const icon = cat.icon || categoryIcons[cat.slug] || '✨';
           const hasImage = !!cat.image;
@@ -106,22 +99,8 @@ export default async function ServiceCatalogPage() {
               {/* Card Body */}
               <div className="m-catalog-card-body">
                 <div className="m-catalog-card-name">{cat.name}</div>
-                {cat.description && (
-                  <div className="m-catalog-card-desc">{cat.description}</div>
-                )}
                 <div className="m-catalog-card-footer">
-                  {cat.services.length > 0 ? (
-                    <div className="m-catalog-card-price">
-                      {minPrice === maxPrice
-                        ? formatCurrency(minPrice)
-                        : `${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`
-                      }
-                    </div>
-                  ) : (
-                    <div className="m-catalog-card-price" style={{ color: 'var(--neutral-400)' }}>
-                      Đang cập nhật
-                    </div>
-                  )}
+                  <span className="m-catalog-card-count-text">{cat.services.length} dịch vụ</span>
                   <div className="m-catalog-card-arrow">
                     <FiChevronRight />
                   </div>

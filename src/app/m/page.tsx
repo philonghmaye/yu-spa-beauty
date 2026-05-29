@@ -112,8 +112,11 @@ export default async function MobileHomePage() {
 
       {/* Service Category Chips */}
       <div style={{ padding: '20px 16px 8px' }}>
-        <h3 style={{ fontSize: '1.05rem', marginBottom: 12 }}>Dịch vụ nổi bật</h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <h3 style={{ fontSize: '1.05rem' }}>Dịch vụ nổi bật</h3>
+          <Link href="/m/dich-vu" style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 500 }}>Xem tất cả →</Link>
+        </div>
+        <div className="m-filters" style={{ padding: 0 }}>
           {categories.map(cat => (
             <Link key={cat.id} href={`/m/dich-vu/${cat.slug}`} className="m-chip" style={{ textDecoration: 'none' }}>
               {cat.icon} {cat.name}
