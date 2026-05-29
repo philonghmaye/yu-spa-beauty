@@ -2,10 +2,12 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { requireAdmin } from '@/lib/auth-guard';
 
 export async function getAppointments(filters?: {
   status?: string; date?: string; employeeId?: string;
 }) {
+  await requireAdmin();
   const where: Record<string, unknown> = {};
   if (filters?.status && filters.status !== 'ALL') where.status = filters.status;
   if (filters?.date) where.appointmentDate = filters.date;
@@ -23,6 +25,7 @@ export async function getAppointments(filters?: {
 }
 
 export async function getAppointmentById(id: string) {
+  await requireAdmin();
   return prisma.appointment.findUnique({
     where: { id },
     include: {
@@ -35,6 +38,7 @@ export async function getAppointmentById(id: string) {
 }
 
 export async function updateAppointmentStatus(id: string, status: string) {
+  await requireAdmin();
   const appointment = await prisma.appointment.update({
     where: { id },
     data: { status },
@@ -76,6 +80,7 @@ export async function updateAppointmentStatus(id: string, status: string) {
 }
 
 export async function addStaffNote(id: string, note: string) {
+  await requireAdmin();
   await prisma.appointment.update({
     where: { id },
     data: { staffNote: note },
@@ -88,6 +93,7 @@ export async function createAppointmentAdmin(data: {
   startTime: string; endTime: string; serviceIds: string[];
   customerNote?: string; staffNote?: string;
 }) {
+  await requireAdmin();
   // Get services for price calc
   const services = await prisma.service.findMany({
     where: { id: { in: data.serviceIds } },
@@ -123,6 +129,7 @@ export async function createAppointmentAdmin(data: {
 }
 
 export async function deleteAppointment(id: string) {
+  await requireAdmin();
   await prisma.appointment.delete({ where: { id } });
   revalidatePath('/admin/lich-hen');
   revalidatePath('/admin');

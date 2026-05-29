@@ -39,6 +39,8 @@ export async function getBusinessHours(): Promise<BusinessHours> {
   }
 }
 
+import { requireAdmin } from '@/lib/auth-guard';
+
 /**
  * Update business hours in StoreSetting
  */
@@ -47,6 +49,7 @@ export async function updateBusinessHours(data: {
   closeTime: string;
   slotInterval: number;
 }) {
+  await requireAdmin();
   const entries = [
     { key: 'OPEN_TIME', value: data.openTime },
     { key: 'CLOSE_TIME', value: data.closeTime },

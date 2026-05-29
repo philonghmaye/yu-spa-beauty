@@ -2,8 +2,10 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { requireAdmin } from '@/lib/auth-guard';
 
 export async function getPromotions(filter?: { isActive?: boolean }) {
+  await requireAdmin();
   const where: Record<string, unknown> = {};
   if (filter?.isActive !== undefined) where.isActive = filter.isActive;
 

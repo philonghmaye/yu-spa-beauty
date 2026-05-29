@@ -1,23 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
-// MoMo Sandbox credentials (thay bằng production khi go-live)
-const MOMO_CONFIG = {
-  partnerCode: process.env.MOMO_PARTNER_CODE || 'MOMO_PARTNER',
-  accessKey: process.env.MOMO_ACCESS_KEY || 'F8BBA842ECF85',
-  secretKey: process.env.MOMO_SECRET_KEY || 'K951B6PE1waDMi640xX08PD3vg6EkVlz',
-  endpoint: process.env.MOMO_ENDPOINT || 'https://test-payment.momo.vn/v2/gateway/api/create',
-  redirectUrl: process.env.NEXT_PUBLIC_APP_URL
-    ? `${process.env.NEXT_PUBLIC_APP_URL}/m/dat-lich/ket-qua`
-    : 'https://yuri-spa-beauty.vercel.app/m/dat-lich/ket-qua',
-  ipnUrl: process.env.NEXT_PUBLIC_APP_URL
-    ? `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/momo/callback`
-    : 'https://yuri-spa-beauty.vercel.app/api/payment/momo/callback',
-};
+// MoMo credentials — MUST be set in environment variables
+function getMomoConfig() {
+  const partnerCode = process.env.MOMO_PARTNER_CODE;
+  const accessKey = process.env.MOMO_ACCESS_KEY;
+  const secretKey = process.env.MOMO_SECRET_KEY;
+  const endpoint = process.env.MOMO_ENDPOINT || 'https://test-payment.momo.vn/v2/gateway/api/create';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://yuri-spa-beauty.vercel.app';
+
+  if (!partnerCode || !accessKey || !secretKey) {
+    throw new Error('MoMo payment credentials not configured. Set MOMO_PARTNER_CODE, MOMO_ACCESS_KEY, MOMO_SECRET_KEY in .env');
+  }
+
+  return {
+    partnerCode,
+    accessKey,
+    secretKey,
+    endpoint,
+    redirectUrl: `${baseUrl}/m/dat-lich/ket-qua`,
+    ipnUrl: `${baseUrl}/api/payment/momo/callback`,
+  };
+}
 
 export async function POST(req: NextRequest) {
   try {
+    const MOMO_CONFIG = getMomoConfig();
     const { amount, orderId, orderInfo } = await req.json();
+
+    // Basic validation
+    if (!amount || !orderId || !orderInfo || amount <= 0) {
+      return NextResponse.json({ error: 'Dữ liệu thanh toán không hợp lệ' }, { status: 400 });
+    }
 
     const requestId = `${MOMO_CONFIG.partnerCode}-${Date.now()}`;
     const rawSignature = [

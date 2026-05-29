@@ -1,19 +1,28 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-export function middleware(request: NextRequest) {
-  // Simple path-based protection
-  // NextAuth handles actual session validation via its own middleware
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Admin routes - will be checked in page components via auth()
+  // Admin routes — require ADMIN role
   if (pathname.startsWith('/admin')) {
-    // Let Next.js handle, individual pages check auth
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token) {
+      return NextResponse.redirect(new URL('/dang-nhap', request.url));
+    }
+    if (token.role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
     return NextResponse.next();
   }
 
-  // Customer account routes
+  // Customer account routes — require login
   if (pathname.startsWith('/tai-khoan')) {
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token) {
+      return NextResponse.redirect(new URL('/dang-nhap', request.url));
+    }
     return NextResponse.next();
   }
 

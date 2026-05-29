@@ -2,10 +2,12 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { requireAdmin } from '@/lib/auth-guard';
 
 // ============ CATEGORIES ============
 
 export async function getCategories() {
+  await requireAdmin();
   return prisma.category.findMany({
     include: { services: { where: { isActive: true } } },
     orderBy: { sortOrder: 'asc' },

@@ -5,15 +5,49 @@ import prisma from '@/lib/prisma';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { orderId, resultCode, amount, signature } = body;
+    const {
+      partnerCode, orderId, requestId, amount, orderInfo,
+      orderType, transId, resultCode, message, payType,
+      responseTime, extraData, signature,
+    } = body;
 
-    // Verify signature
-    const secretKey = process.env.MOMO_SECRET_KEY || 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
-    const accessKey = process.env.MOMO_ACCESS_KEY || 'F8BBA842ECF85';
+    // Verify MoMo credentials exist
+    const secretKey = process.env.MOMO_SECRET_KEY;
+    const accessKey = process.env.MOMO_ACCESS_KEY;
+    if (!secretKey || !accessKey) {
+      console.error('MoMo credentials not configured');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
 
-    // Update payment status based on resultCode
+    // Verify HMAC-SHA256 signature
+    const rawSignature = [
+      `accessKey=${accessKey}`,
+      `amount=${amount}`,
+      `extraData=${extraData}`,
+      `message=${message}`,
+      `orderId=${orderId}`,
+      `orderInfo=${orderInfo}`,
+      `orderType=${orderType}`,
+      `partnerCode=${partnerCode}`,
+      `payType=${payType}`,
+      `requestId=${requestId}`,
+      `responseTime=${responseTime}`,
+      `resultCode=${resultCode}`,
+      `transId=${transId}`,
+    ].join('&');
+
+    const expectedSignature = crypto
+      .createHmac('sha256', secretKey)
+      .update(rawSignature)
+      .digest('hex');
+
+    if (signature !== expectedSignature) {
+      console.error('MoMo callback: Invalid signature', { orderId, received: signature, expected: expectedSignature });
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 403 });
+    }
+
+    // Signature verified — process payment
     if (resultCode === 0) {
-      // Payment successful - update appointment
       const payment = await prisma.payment.findFirst({
         where: { transactionId: orderId },
       });
@@ -30,7 +64,6 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ message: 'OK' });
     } else {
-      // Payment failed
       const payment = await prisma.payment.findFirst({
         where: { transactionId: orderId },
       });

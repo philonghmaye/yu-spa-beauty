@@ -296,6 +296,23 @@ export async function createBooking(data: {
     // Don't fail the booking if email fails
   }
 
+  // 6b. Create in-app notification for admin panel
+  try {
+    await prisma.notification.create({
+      data: {
+        appointmentId: appointment.id,
+        type: 'ADMIN_NEW_BOOKING',
+        channel: 'IN_APP',
+        recipient: 'ADMIN',
+        content: `Lịch hẹn mới từ ${appointment.customer.user.name} - ${appointment.services.map(s => s.service.name).join(', ')} lúc ${appointment.startTime} ngày ${appointment.appointmentDate}`,
+        status: 'PENDING',
+      },
+    });
+  } catch (err) {
+    console.error('Failed to create admin notification:', err);
+    // Don't fail the booking if notification creation fails
+  }
+
   // 7. Revalidate paths
   revalidatePath('/admin');
   revalidatePath('/admin/lich-hen');

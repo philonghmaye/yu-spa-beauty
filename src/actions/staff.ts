@@ -3,8 +3,10 @@
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
+import { requireAdmin } from '@/lib/auth-guard';
 
 export async function getStaffList() {
+  await requireAdmin();
   return prisma.employee.findMany({
     include: {
       user: { select: { id: true, name: true, phone: true, email: true, avatar: true, isActive: true } },

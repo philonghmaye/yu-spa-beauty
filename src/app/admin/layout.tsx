@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { FiHome, FiCalendar, FiScissors, FiUsers, FiUserCheck, FiBarChart2, FiGift, FiStar, FiSettings, FiArrowLeft } from 'react-icons/fi';
+import AdminNotificationBell from '@/components/AdminNotificationBell';
 
 const adminNav = [
   { href: '/admin', label: 'Tổng quan', icon: <FiHome /> },
@@ -40,8 +41,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
       </aside>
       <main className="admin-main">
+        <div className="admin-topbar">
+          <div className="admin-topbar-left">
+            <span className="admin-topbar-greeting">Bảng điều khiển</span>
+          </div>
+          <div className="admin-topbar-right">
+            <AdminNotificationBell />
+          </div>
+        </div>
         {children}
       </main>
     </div>
   );
 }
+

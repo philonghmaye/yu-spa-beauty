@@ -3,8 +3,10 @@
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getVietnamNow } from '@/lib/utils';
+import { requireAdmin } from '@/lib/auth-guard';
 
 export async function getCustomers(search?: string) {
+  await requireAdmin();
   const where = search ? {
     user: {
       OR: [
