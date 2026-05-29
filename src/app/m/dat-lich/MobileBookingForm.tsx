@@ -123,8 +123,8 @@ export default function MobileBookingForm({
       </div>
 
       <div style={{ paddingBottom: 90 }}>
-        {/* Customer Info (if not logged in) */}
-        {!userInfo && (
+        {/* Customer Info (show if name or phone missing) */}
+        {(!customerName || !customerPhone) && (
           <div className="m-booking-section">
             <div className="m-booking-section-title">Thông tin của bạn</div>
             <div style={{ marginBottom: 10 }}>
