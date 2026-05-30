@@ -106,13 +106,8 @@ export default function MobileAppointmentList({ appointments, today }: { appoint
               marginBottom: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
               borderLeft: `3px solid ${statusColors[appt.status] || '#ccc'}`,
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <div>
-                  <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>{appt.customer.user.name}</span>
-                  {appt.customer.user.phone && (
-                    <span style={{ fontSize: '0.75rem', color: '#888', marginLeft: 6 }}>{appt.customer.user.phone}</span>
-                  )}
-                </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>{appt.customer.user.name}</span>
                 <span style={{
                   fontSize: '0.7rem', padding: '2px 8px', borderRadius: 10,
                   background: `${statusColors[appt.status]}15`, color: statusColors[appt.status],
@@ -121,6 +116,20 @@ export default function MobileAppointmentList({ appointments, today }: { appoint
                   {getStatusLabel(appt.status)}
                 </span>
               </div>
+              {appt.customer.user.phone && (
+                <div style={{ marginBottom: 6 }}>
+                  <a
+                    href={`tel:${appt.customer.user.phone}`}
+                    style={{
+                      fontSize: '0.8rem', color: '#22c55e', textDecoration: 'none',
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                      fontWeight: 500,
+                    }}
+                  >
+                    📞 {appt.customer.user.phone}
+                  </a>
+                </div>
+              )}
               <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: 4 }}>
                 📆 {isToday ? 'Hôm nay' : appt.appointmentDate} • 🕐 {appt.startTime} - {appt.endTime}
               </div>
