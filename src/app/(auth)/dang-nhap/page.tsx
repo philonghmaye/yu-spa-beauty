@@ -22,9 +22,9 @@ export default function LoginPage() {
         setError('Email/SĐT hoặc mật khẩu không đúng');
       } else {
         // Check if user is admin to redirect appropriately
-        const sessionRes = await fetch('/api/auth/session');
-        const session = await sessionRes.json();
-        if (session?.user?.role === 'ADMIN') {
+        const roleRes = await fetch('/api/auth/role');
+        const { role } = await roleRes.json();
+        if (role === 'ADMIN') {
           window.location.href = '/admin';
         } else {
           window.location.href = '/';
