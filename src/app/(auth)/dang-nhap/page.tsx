@@ -25,11 +25,10 @@ export default function LoginPage() {
         const sessionRes = await fetch('/api/auth/session');
         const session = await sessionRes.json();
         if (session?.user?.role === 'ADMIN') {
-          router.push('/admin');
+          window.location.href = '/admin';
         } else {
-          router.push('/');
+          window.location.href = '/';
         }
-        router.refresh();
       }
     } catch {
       setError('Đã có lỗi xảy ra');
