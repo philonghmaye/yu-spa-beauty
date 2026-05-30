@@ -367,9 +367,6 @@ const nameTranslations: Record<string, string> = {
 
   // ==================== EXTRA SKIN CARE ====================
   'KEM CÁ': 'Fish Cream Treatment',
-  'Giải độc da, điều trị da nhờn, thô sần, lỗ chân lông to, loại bỏ mụn đầu đen, mụn viêm sưng.': 'Skin detox, oily/rough skin, large pores, blackhead and inflammatory acne treatment.',
-  'Chống lão hóa, khô nhăn, nhão xệ vùng cổ, và nâng cơ làm sáng mịn da và săn chắc toàn diện vùng cằm cổ.': 'Anti-aging, neck wrinkle and sagging treatment, lifting and firming chin-neck area.',
-  'Liệu trình sáng da, loại bỏ hắc tố,phục hồi độ tươi sáng khỏe mạnh cấp tốc cho làn da.': 'Skin brightening, melanin removal, rapid healthy glow restoration.',
   'Bắn hạt Prodyce': 'Prodyce Shot',
 
   // ==================== MISC ====================
@@ -402,6 +399,16 @@ const nameTranslations: Record<string, string> = {
   'Điều trị sắc tố da, lỗ chân lông to và tình trạng da sạm nám do nội tiết.': 'Skin pigment, large pore and hormonal dark spot treatment.',
   'Đặc trị mụn ít, ẩn, thâm.': 'Mild, hidden and dark acne treatment.',
   'Đặc trị triệt tiêu mụn bọc, mụn viêm, mụn mủ.': 'Cystic, inflammatory and pustular acne treatment.',
+  'Giải độc da, điều trị da nhờn, thô sần, lỗ chân lông to, loại bỏ mụn đầu đen, mụn viêm sưng.': 'Skin detox, oily/rough skin, large pores, blackhead and inflammatory acne treatment.',
+  'Chống lão hóa, khô nhăn, nhão xệ vùng cổ, và nâng cơ làm sáng mịn da và săn chắc toàn diện vùng cằm cổ.': 'Anti-aging, neck wrinkle and sagging treatment, lifting and firming chin-neck area.',
+  'Liệu trình sáng da, loại bỏ hắc tố,phục hồi độ tươi sáng khỏe mạnh cấp tốc cho làn da.': 'Skin brightening, melanin removal, rapid healthy glow restoration.',
+  'Cấy tế bào gốc Pháp: Đặc trị da dị ứng, giảm nở mao mạch, giảm đỏ làm mờ tổn thương do kích ứng hóa chất.': 'French Stem Cell: Treats allergic skin, reduces capillary dilation, redness and chemical irritation damage.',
+  'Cấy tinh chất Collagen Pháp: Đẩy lùi lão hóa, loại bỏ nếp nhăn và nâng cơ cấp tốc.': 'French Collagen Essence: Anti-aging, wrinkle removal and instant face lifting.',
+  'Liệu trình tái tạo làn da lão hóa: Giảm stress, chống tình trạng khô nhăn mất nước trên bề mặt da.': 'Aging Skin Renewal: Reduce stress, combat dryness and dehydration on skin surface.',
+  'Liệu trình thanh lọc da tinh khiết: Thông thoáng và tươi mới cho mọi loại da.': 'Pure Skin Detox: Clear and refresh all skin types.',
+  'Liệu trình phục hồi độ tươi sáng: Cấp tốc cho làn da trắng sáng, xóa tì vết với huyết thanh sinh học Bright Ampoules.': 'Glow Restoration: Instant skin brightening, remove blemishes with Bright Ampoules bio serum.',
+  'Liệu trình mở cửa da: Đào thải độc tố và loại bỏ tế bào sừng chết, làm thông thoáng chân lông và bề mặt da. (Liệu trình này kết hợp trước các liệu trình điều trị khác để đạt hiệu quả tốt nhất).': 'Skin Opening: Detoxify and remove dead cells, unclog pores. (Pre-treatment for best results with other therapies).',
+  'Liệu trình ENZIM thảo dược: Đào thải độc tố, trẻ hóa da "mặt và cổ", xóa nếp nhăn cấp tốc.': 'Herbal Enzyme: Detox, rejuvenate face & neck skin, instant wrinkle removal.',
 
   // ==================== SEED DESCRIPTIONS ====================
   'Làm sạch sâu, tẩy tế bào chết, đắp mặt nạ dưỡng ẩm cao cấp': 'Deep cleansing, exfoliation, premium moisturizing mask',
@@ -519,7 +526,9 @@ export function LangProvider({ children }: { children: ReactNode }) {
     for (const key of Object.keys(nameTranslations)) {
       if (key.toLowerCase() === lower) return nameTranslations[key];
     }
-    // Auto-translate using keyword replacement
+    // Auto-translate using keyword replacement — only for short names
+    // Long sentences without exact mapping are returned as-is to avoid garbled output
+    if (name.length > 50) return name;
     let result = name;
     for (const [pattern, replacement] of keywordMap) {
       result = result.replace(pattern, replacement);
