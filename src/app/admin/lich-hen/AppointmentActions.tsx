@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FiCheck, FiX, FiMessageSquare, FiTrash2 } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiX, FiMessageSquare, FiTrash2 } from 'react-icons/fi';
 import { updateAppointmentStatus, addStaffNote, deleteAppointment } from '@/actions/appointments';
 import toast from 'react-hot-toast';
 
@@ -52,10 +52,20 @@ export default function AppointmentActions({ appointment }: Props) {
             </button>
           </>
         )}
+        {appointment.status === 'CONFIRMED' && (
+          <>
+            <button className="btn btn-primary btn-sm" style={{ padding: '4px 10px', fontSize: '0.78rem', background: 'var(--success)' }} onClick={() => handleStatus('COMPLETED', 'hoàn thành')} disabled={loading}>
+              <FiCheckCircle /> Hoàn thành
+            </button>
+            <button className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.78rem', color: 'var(--error)' }} onClick={() => handleStatus('CANCELLED', 'hủy')} disabled={loading}>
+              <FiX /> Hủy
+            </button>
+          </>
+        )}
         <button className="btn btn-ghost btn-sm" style={{ padding: '4px 10px' }} onClick={() => setShowNote(!showNote)} title="Ghi chú">
           <FiMessageSquare />
         </button>
-        {appointment.status !== 'PENDING' && (
+        {!['PENDING'].includes(appointment.status) && (
           <button className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', color: 'var(--error)' }} onClick={handleDelete} title="Xóa">
             <FiTrash2 />
           </button>
