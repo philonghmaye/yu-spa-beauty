@@ -25,7 +25,18 @@ export default function MobileLoginPage() {
       toast.error('Sai thông tin đăng nhập');
     } else {
       toast.success('Đăng nhập thành công');
-      router.push('/m');
+      // Check if user is admin
+      try {
+        const res = await fetch('/api/auth/role');
+        const data = await res.json();
+        if (data.role === 'ADMIN') {
+          router.push('/m/admin');
+        } else {
+          router.push('/m');
+        }
+      } catch {
+        router.push('/m');
+      }
       router.refresh();
     }
     setLoading(false);
