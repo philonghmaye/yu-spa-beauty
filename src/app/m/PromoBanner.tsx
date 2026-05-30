@@ -14,38 +14,54 @@ export default function PromoBanner({ isAdmin, initialBanner }: Props) {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Compress image on client using canvas
+  const compressImage = (file: File, maxWidth = 800, quality = 0.7): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = (h * maxWidth) / w; w = maxWidth; }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate
     if (!file.type.startsWith('image/')) {
       toast.error('Vui lòng chọn file hình ảnh');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File quá lớn (tối đa 5MB)');
       return;
     }
 
     setUploading(true);
     try {
-      // Upload file
-      const formData = new FormData();
-      formData.append('file', file);
-      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
-      const uploadData = await uploadRes.json();
+      // Compress image client-side
+      const dataUrl = await compressImage(file);
 
-      if (!uploadData.url) throw new Error('Upload failed');
-
-      // Save banner URL to settings
-      await fetch('/api/settings/banner', {
+      // Save directly to settings API
+      const res = await fetch('/api/settings/banner', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ value: uploadData.url }),
+        body: JSON.stringify({ value: dataUrl }),
       });
 
-      setBannerUrl(uploadData.url);
+      if (!res.ok) throw new Error('Save failed');
+
+      setBannerUrl(dataUrl);
       toast.success('Cập nhật banner thành công!');
     } catch {
       toast.error('Có lỗi xảy ra khi upload');
