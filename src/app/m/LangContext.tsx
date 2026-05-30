@@ -103,37 +103,121 @@ const translations = {
 
 // Vietnamese → English name mapping for categories & services
 const nameTranslations: Record<string, string> = {
-  // Categories
+  // ==================== CATEGORIES ====================
   'Nails': 'Nails',
+  'Làm móng': 'Nail Art',
   'Nối mi': 'Eyelash Extensions',
   'Massage': 'Massage',
+  'Massage & Spa': 'Massage & Spa',
   'Chăm sóc da': 'Skin Care',
   'Liệu trình': 'Treatment',
   'Chăm sóc tóc': 'Hair Care',
   'Trang điểm': 'Makeup',
   'Waxing': 'Waxing',
   'Spa': 'Spa',
-  // Common services
-  'Massage đầu 30p khách tây': 'Head Massage 30min (Tourist)',
+  'Gội đầu': 'Head Wash',
+  'Dịch vụ khác': 'Other Services',
+  'Tiêm filler & Botox': 'Filler & Botox Injection',
+  'Triệt lông': 'Hair Removal',
+  'Giảm béo': 'Body Slimming',
+  'Phun xăm': 'Permanent Makeup',
+  'Tắm trắng & Dưỡng da': 'Whitening & Skin Care',
+  'Trị liệu công nghệ cao': 'High-Tech Therapy',
+  'Đặc trị da nhờn & Mụn': 'Oily Skin & Acne Treatment',
+  'Wax lông': 'Waxing',
+  'HIFU Therapy': 'HIFU Therapy',
+  'Laser Pink': 'Laser Pink',
+  'Thermage FLX': 'Thermage FLX',
+  'Trị liệu vùng mắt': 'Eye Area Treatment',
+  'Điều trị nám White HD': 'Melasma Treatment White HD',
+  'Thuốc Juvederm': 'Juvederm',
+  'Thuốc Neauvia': 'Neauvia',
+  'Thuốc Korean': 'Korean Products',
+
+  // ==================== SERVICES (from seed) ====================
+  'Chăm sóc da mặt cơ bản': 'Basic Facial Care',
+  'Chăm sóc da chuyên sâu': 'Advanced Skin Care',
+  'Trị mụn chuyên sâu': 'Advanced Acne Treatment',
+  'Làm móng gel cao cấp': 'Premium Gel Nails',
+  'Sơn móng Ombre': 'Ombre Nail Polish',
+  'Nối mi Classic': 'Classic Lash Extensions',
+  'Nối mi Volume': 'Volume Lash Extensions',
+  'Massage body thư giãn': 'Relaxing Body Massage',
+  'Massage đá nóng': 'Hot Stone Massage',
+  'Gội đầu dưỡng sinh': 'Herbal Head Wash',
+
+  // ==================== NAIL SERVICES ====================
+  'Massage đầu 30p khách tây': 'Head Massage 30min',
   'Massage body 60p': 'Body Massage 60min',
+  'Massage body 90p': 'Body Massage 90min',
   'Massage mặt': 'Facial Massage',
   'Massage chân': 'Foot Massage',
   'Massage toàn thân': 'Full Body Massage',
-  'Cắt da sơn gel khách tây': 'Gel Manicure (Tourist)',
+  'Massage vai gáy': 'Shoulder & Neck Massage',
+  'Massage lưng': 'Back Massage',
+  'Cắt da sơn gel khách tây': 'Gel Manicure',
   'Sơn gel tay': 'Gel Nails - Hands',
   'Sơn gel chân': 'Gel Nails - Feet',
-  'Design đơn giản khách tây': 'Simple Nail Design (Tourist)',
+  'Sơn gel tay chân': 'Gel Nails - Hands & Feet',
+  'Design đơn giản khách tây': 'Simple Nail Design',
+  'Design phức tạp': 'Complex Nail Design',
+  'Tháo gel': 'Gel Removal',
+  'Cắt da': 'Cuticle Care',
+  'Sơn thường': 'Regular Polish',
+  'Đắp bột': 'Acrylic Nails',
+  'Nối móng': 'Nail Extensions',
+
+  // ==================== EYELASH SERVICES ====================
   'Nối mi cụm': 'Cluster Lash Extensions',
   'Nối mi sợi': 'Individual Lash Extensions',
   'Nối mi 1:1': '1:1 Lash Extensions',
+  'Nối mi Mega Volume': 'Mega Volume Lashes',
+  'Tháo mi': 'Lash Removal',
+  'Uốn mi': 'Lash Lift',
+  'Nhuộm mi': 'Lash Tint',
+
+  // ==================== SKIN CARE SERVICES ====================
   'Chăm sóc da mặt': 'Facial Treatment',
   'Tẩy tế bào chết': 'Exfoliation',
   'Đắp mặt nạ': 'Face Mask Treatment',
   'Mở cửa da': 'Skin Opening Treatment',
-  'Gội đầu dưỡng sinh': 'Herbal Head Wash',
+  'Trị nám': 'Melasma Treatment',
+  'Trị thâm': 'Dark Spot Treatment',
+  'Căng bóng da': 'Skin Brightening',
+  'Peel da': 'Chemical Peel',
+  'Lăn kim': 'Microneedling',
+
+  // ==================== HAIR SERVICES ====================
   'Uốn tóc': 'Hair Perming',
   'Nhuộm tóc': 'Hair Coloring',
   'Cắt tóc': 'Haircut',
+  'Phục hồi tóc': 'Hair Restoration',
+  'Ép tóc': 'Hair Straightening',
+  'Hấp dầu': 'Hair Conditioning',
+
+  // ==================== STAFF POSITIONS ====================
+  'Chuyên viên': 'Specialist',
+  'Chuyên viên da liễu': 'Dermatology Specialist',
+  'Nail Artist': 'Nail Artist',
+  'Chuyên viên Spa': 'Spa Specialist',
+
+  // ==================== SERVICE DESCRIPTIONS ====================
+  'Làm sạch sâu, tẩy tế bào chết, đắp mặt nạ dưỡng ẩm cao cấp': 'Deep cleansing, exfoliation, premium moisturizing mask',
+  'Liệu trình trẻ hóa da với công nghệ hiện đại và sản phẩm cao cấp': 'Skin rejuvenation with modern technology and premium products',
+  'Điều trị mụn hiệu quả, phục hồi da sạch khỏe': 'Effective acne treatment, restore clear and healthy skin',
+  'Thiết kế móng nghệ thuật với gel bền đẹp lên đến 3-4 tuần': 'Artistic nail design with durable gel lasting 3-4 weeks',
+  'Kỹ thuật sơn chuyển màu gradient thời thượng': 'Trendy gradient color technique',
+  'Nối mi 1:1 tự nhiên, nhẹ nhàng, bền đẹp 3-4 tuần': 'Natural 1:1 lash extensions, lightweight, lasting 3-4 weeks',
+  'Nối mi bung dày, quyến rũ cho đôi mắt cuốn hút': 'Full volume lashes, glamorous and captivating eyes',
+  'Massage toàn thân kết hợp tinh dầu, giảm stress hiệu quả': 'Full body massage with essential oils, effective stress relief',
+  'Liệu pháp đá nóng giúp thư giãn sâu, giảm đau nhức': 'Hot stone therapy for deep relaxation and pain relief',
+  'Gội đầu kết hợp massage đầu, vai, cổ thư giãn': 'Head wash with relaxing head, shoulder and neck massage',
+
+  // ==================== CATEGORY DESCRIPTIONS ====================
+  'Các dịch vụ chăm sóc và điều trị da mặt': 'Facial care and treatment services',
+  'Dịch vụ làm nail nghệ thuật': 'Artistic nail services',
+  'Nối mi chuyên nghiệp': 'Professional eyelash extensions',
+  'Massage thư giãn toàn thân': 'Full body relaxation massage',
 };
 
 

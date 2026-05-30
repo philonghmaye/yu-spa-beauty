@@ -40,7 +40,7 @@ export default function CategoryDetailContent({ category, heroImage, services }:
           </div>
           <h1 className="m-catdetail-hero-title">{tn(category.name)}</h1>
           {category.description && (
-            <p className="m-catdetail-hero-desc">{category.description}</p>
+            <p className="m-catdetail-hero-desc">{tn(category.description)}</p>
           )}
           <div className="m-catdetail-hero-stats">
             <span className="m-catdetail-stat">

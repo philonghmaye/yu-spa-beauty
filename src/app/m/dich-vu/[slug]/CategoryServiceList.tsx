@@ -73,7 +73,7 @@ export default function CategoryServiceList({ services, categorySlug }: { servic
                 <div className="m-catdetail-service-info">
                   <h3 className="m-catdetail-service-name">{tn(service.name)}</h3>
                   {service.description && (
-                    <p className="m-catdetail-service-desc">{service.description}</p>
+                    <p className="m-catdetail-service-desc">{tn(service.description)}</p>
                   )}
                   <div className="m-catdetail-service-meta">
                     {service.duration > 0 && (
