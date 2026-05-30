@@ -279,11 +279,13 @@ const nameTranslations: Record<string, string> = {
   'Triệt full tay': 'Full Arm Removal', 'Triệt lông bikini lẻ': 'Single Bikini',
   'Triệt lông mặt': 'Face Hair Removal', 'Triệt ria mép': 'Mustache Removal',
   'Triệt vùng nách': 'Underarm Removal',
+  'Liệu trình 1/2 tay': 'Half Arm Treatment',
 
   // ==================== WAXING ====================
   'WAX CHÂN': 'Leg Wax', 'Wax 1/2 tay': 'Half Arm Wax',
   'Wax bikino': 'Bikini Wax', 'Wax full body': 'Full Body Wax',
   'Wax nách': 'Underarm Wax',
+  'Full tay': 'Full Arm', 'Full chân': 'Full Leg',
 
   // ==================== WHITENING ====================
   'Tắm trắng Ngọc Trai Collagen 1 buổi': 'Pearl Collagen Whitening 1 Session',
@@ -312,6 +314,63 @@ const nameTranslations: Record<string, string> = {
   'Cắt tóc': 'Haircut', 'Phục hồi tóc': 'Hair Restoration',
   'Ép tóc': 'Hair Straightening', 'ép tóc': 'Hair Straightening',
   'Hấp dầu': 'Hair Conditioning', 'NHUỘM PHŨ BẠC': 'Gray Coverage Color',
+
+  // ==================== GỘI ĐẦU PACKAGES ====================
+  'GÓI GỘI DƯỠNG SINH 5L TẶNG 1L': 'Herbal Wash 5+1 Package',
+  'GÓI GỘI CHILL 10L TẶNG 3L': 'Chill Wash 10+3 Package',
+  'GÓI GỘI CHILL 5L TẶNG 1L': 'Chill Wash 5+1 Package',
+  'GÓI GỘI THƯ GIÃN 5L TẶNG 1L': 'Relaxing Wash 5+1 Package',
+  'GÓI GỘI THƯ GIÃN 10L TẶNG 3L': 'Relaxing Wash 10+3 Package',
+
+  // ==================== EXTRA NAIL SERVICES ====================
+  'DESIGN ĐƠN GIẢN KHÁCH TÂY': 'Simple Nail Design',
+  'CẮT DA SƠN GEL KHÁCH TÂY': 'Gel Manicure',
+  'CẮT DA SƠN GEL MẮT MÈO': 'Cat Eye Gel Manicure',
+  'CẮT MÓNG': 'Nail Cut', 'CẮT DA TAY KHÁCH TÂY': 'Hand Cuticle Care',
+  'CẮT DA CHÂN KHÁCH TÂY': 'Foot Cuticle Care',
+  'CẮT DA TAY CHÂN KHÁCH TÂY': 'Hand & Foot Cuticle Care',
+  'CHÀ GÓT CHÂN KHÁCH TÂY': 'Heel Scrub',
+  'DESIGN': 'Nail Design', 'Design': 'Nail Design',
+  'CẮT DA TAY/CHÂN TẾT': 'Cuticle Care (Holiday)',
+  'CẮT DA + SƠN GEL TAY/CHÂN TẾT': 'Cuticle + Gel (Holiday)',
+  'Dịch vụ truyền serum dưỡng da tay chân và áng sáng sinh học': 'Hand & Foot Serum IV + Bio Light',
+  'Chà gót chân ( massage 20 phút )': 'Heel Scrub (20min Massage)',
+  'Gắn hoa bột': 'Acrylic Flower', 'Gắn charm': 'Nail Charm',
+  'Fill bột': 'Acrylic Fill',
+  'Design vẽ 4 ngón full đá': 'Design 4 Nails Full Gems',
+  'Design vẽ 4 ngón ít đá': 'Design 4 Nails Few Gems',
+  'Design vẽ 2 ngón full đá': 'Design 2 Nails Full Gems',
+  'Design vẽ 2 ngón ít đá': 'Design 2 Nails Few Gems',
+  'Design móng không đá ( tùy mẫu )': 'Design No Gems (Custom)',
+  'Design đầu móng': 'Tip Design', 'Design đơn giản': 'Simple Design',
+  'Cắt da tay/chân + sơn gel': 'Cuticle + Gel Polish',
+  'Cắt da + sơn opi': 'Cuticle + OPI Polish',
+  'Cắt da tay chân': 'Hand & Foot Cuticle Care',
+  'Cắt da chân': 'Foot Cuticle Care', 'Cắt da tay': 'Hand Cuticle Care',
+
+  // ==================== EXTRA EYELASH ====================
+  'DẶM MI': 'Lash Touch-Up',
+
+  // ==================== THERMAGE FLX ====================
+  'Liệu trình Thermage FLX nâng cơ cổ.': 'Thermage FLX Neck Lifting',
+  'Liệu trình Thermage FLX nâng cơ mặt.': 'Thermage FLX Face Lifting',
+  'Liệu trình Thermage FLX nâng cơ trọn gói.': 'Thermage FLX Full Lifting Package',
+
+  // ==================== EXTRA FILLER ====================
+  'Giảm tuyến mồ hôi': 'Sweat Gland Reduction',
+  'Cải thiện phong thấp chân': 'Leg Arthritis Relief',
+  'Cải thiện phong thấp tay': 'Arm Arthritis Relief',
+
+  // ==================== LASER / CO2 ====================
+  'BẮN CO2': 'CO2 Laser', 'BẮN CO2 MẶT': 'CO2 Laser Face',
+  'BẮN CO2 HAI TAY': 'CO2 Laser Both Arms',
+
+  // ==================== EXTRA SKIN CARE ====================
+  'KEM CÁ': 'Fish Cream Treatment',
+  'Giải độc da, điều trị da nhờn, thô sần, lỗ chân lông to, loại bỏ mụn đầu đen, mụn viêm sưng.': 'Skin detox, oily/rough skin, large pores, blackhead and inflammatory acne treatment.',
+  'Chống lão hóa, khô nhăn, nhão xệ vùng cổ, và nâng cơ làm sáng mịn da và săn chắc toàn diện vùng cằm cổ.': 'Anti-aging, neck wrinkle and sagging treatment, lifting and firming chin-neck area.',
+  'Liệu trình sáng da, loại bỏ hắc tố,phục hồi độ tươi sáng khỏe mạnh cấp tốc cho làn da.': 'Skin brightening, melanin removal, rapid healthy glow restoration.',
+  'Bắn hạt Prodyce': 'Prodyce Shot',
 
   // ==================== MISC ====================
   'ĐỐT MỤN RUỒI': 'Mole Removal',
@@ -398,18 +457,30 @@ export function LangProvider({ children }: { children: ReactNode }) {
   };
 
   // Keyword-based auto-translation for unmapped names
+  // IMPORTANT: Multi-word phrases MUST come before single-word patterns
   const keywordMap: [RegExp, string][] = [
+    // Multi-word phrases first (order matters!)
+    [/giảm béo/gi, 'Body Slimming'], [/tắm trắng/gi, 'Whitening Bath'],
+    [/chăm sóc/gi, 'Care'], [/điều trị/gi, 'Treatment'],
+    [/liệu trình/gi, 'Treatment'], [/công nghệ/gi, 'Technology'],
+    [/thái dương/gi, 'Temple'], [/rãnh cười/gi, 'Smile Line'],
+    [/hốc mắt/gi, 'Under Eye'], [/nọng cằm/gi, 'Double Chin'],
+    [/nhũ hoa/gi, 'Areola'], [/bắp chân/gi, 'Calf'], [/bắp tay/gi, 'Upper Arm'],
+    [/ria mép/gi, 'Mustache'], [/lăn kim/gi, 'Microneedling'],
+    [/nếp nhăn/gi, 'Wrinkle'], [/mặt nạ/gi, 'Mask'],
+    [/cao cấp/gi, 'Premium'], [/chuyên sâu/gi, 'Advanced'], [/cơ bản/gi, 'Basic'],
+    [/khách tây/gi, ''], [/giá tết/gi, '(Holiday)'],
+    [/10 buổi/gi, '10 Sessions'], [/5 buổi/gi, '5 Sessions'],
+    [/1 buổi/gi, '1 Session'], [/3 lần/gi, '3 Sessions'], [/5 lần/gi, '5 Sessions'],
+    [/1 bộ/gi, '(Full Set)'], [/1 ngón/gi, '(1 Nail)'],
+
     // Body parts & areas
-    [/\bvùng\b/gi, 'Area:'], [/\bmặt\b/gi, 'Face'], [/\bmắt\b/gi, 'Eye'],
+    [/\bvùng\b/gi, 'Area'], [/\bmặt\b/gi, 'Face'], [/\bmắt\b/gi, 'Eye'],
     [/\bmôi\b/gi, 'Lip'], [/\bmũi\b/gi, 'Nose'], [/\bcằm\b/gi, 'Chin'],
     [/\btrán\b/gi, 'Forehead'], [/\bmá\b/gi, 'Cheek'], [/\btay\b/gi, 'Arm'],
     [/\bchân\b/gi, 'Leg'], [/\bnách\b/gi, 'Underarm'], [/\blưng\b/gi, 'Back'],
     [/\bbụng\b/gi, 'Belly'], [/\bcổ\b/gi, 'Neck'], [/\bvai\b/gi, 'Shoulder'],
-    [/\bgáy\b/gi, 'Nape'], [/\bbikini\b/gi, 'Bikini'], [/\bria mép\b/gi, 'Mustache'],
-    [/\bthái dương\b/gi, 'Temple'], [/\brãnh cười\b/gi, 'Smile Line'],
-    [/\bhốc mắt\b/gi, 'Under Eye'], [/\bnọng cằm\b/gi, 'Double Chin'],
-    [/\bnhũ hoa\b/gi, 'Areola'], [/\bâm đạo\b/gi, 'Vaginal'],
-    [/\bbắp chân\b/gi, 'Calf'], [/\bbắp tay\b/gi, 'Upper Arm'],
+    [/\bgáy\b/gi, 'Nape'], [/\bbikini\b/gi, 'Bikini'],
     [/\bhàm\b/gi, 'Jaw'], [/\btai\b/gi, 'Ear'], [/\bđầu\b/gi, 'Head'],
 
     // Actions & treatments
@@ -420,34 +491,22 @@ export function LangProvider({ children }: { children: ReactNode }) {
     [/\bđắp\b/gi, 'Apply'], [/\bsơn\b/gi, 'Polish'],
     [/\bnối\b/gi, 'Extension'], [/\buốn\b/gi, 'Perm/Lift'],
     [/\bnhuộm\b/gi, 'Color/Tint'], [/\bcắt\b/gi, 'Cut'],
-    [/\bnặn\b/gi, 'Extract'], [/\bđốt\b/gi, 'Burn/Remove'],
-    [/\btruyền\b/gi, 'IV Drip'], [/\bđiều trị\b/gi, 'Treatment'],
-    [/\btrị\b/gi, 'Treat'], [/\blàm\b/gi, 'Make'],
-    [/\btắm trắng\b/gi, 'Whitening Bath'], [/\bgội\b/gi, 'Wash'],
-    [/\bchăm sóc\b/gi, 'Care'], [/\bpeel\b/gi, 'Peel'],
-    [/\blăn kim\b/gi, 'Microneedling'],
+    [/\bnặn\b/gi, 'Extract'], [/\bđốt\b/gi, 'Remove'],
+    [/\btruyền\b/gi, 'IV Drip'], [/\btrị\b/gi, 'Treat'],
+    [/\bgội\b/gi, 'Wash'], [/\bpeel\b/gi, 'Peel'],
 
     // Products & types
     [/\bgel\b/gi, 'Gel'], [/\bbột\b/gi, 'Acrylic'],
     [/\bmi\b/gi, 'Lashes'], [/\bmóng\b/gi, 'Nail'],
     [/\bda\b/gi, 'Skin'], [/\btóc\b/gi, 'Hair'],
-    [/\bmặt nạ\b/gi, 'Mask'], [/\bmụn\b/gi, 'Acne'],
-    [/\bnám\b/gi, 'Melasma'], [/\bthâm\b/gi, 'Dark Spot'],
-    [/\bnếp nhăn\b/gi, 'Wrinkle'], [/\bsẹo\b/gi, 'Scar'],
+    [/\bmụn\b/gi, 'Acne'], [/\bnám\b/gi, 'Melasma'],
+    [/\bthâm\b/gi, 'Dark Spot'], [/\bsẹo\b/gi, 'Scar'],
     [/\bcollagen\b/gi, 'Collagen'], [/\bfiller\b/gi, 'Filler'],
     [/\bbotox\b/gi, 'Botox'], [/\bvitamin\b/gi, 'Vitamin'],
-    [/\bparaffin\b/gi, 'Paraffin'], [/\bretinol\b/gi, 'Retinol'],
 
     // Qualifiers
-    [/\bfull\b/gi, 'Full'], [/\bcao cấp\b/gi, 'Premium'],
-    [/\bchuyên sâu\b/gi, 'Advanced'], [/\bcơ bản\b/gi, 'Basic'],
-    [/\bmới\b/gi, 'New'], [/\bcũ\b/gi, 'Old'],
-    [/\blẻ\b/gi, 'Single'], [/\b1 bộ\b/gi, '(Full Set)'],
-    [/\b1 ngón\b/gi, '(1 Nail)'], [/\b1 buổi\b/gi, '1 Session'],
-    [/\b10 buổi\b/gi, '10 Sessions'], [/\b3 lần\b/gi, '3 Sessions'],
-    [/\b5 lần\b/gi, '5 Sessions'],
-    [/\bkhách tây\b/gi, ''], [/\bgiá tết\b/gi, '(Holiday)'],
-    [/\bphút\b/gi, 'min'], [/\bbuổi\b/gi, 'Session'],
+    [/\bfull\b/gi, 'Full'], [/\bmới\b/gi, 'New'], [/\bcũ\b/gi, 'Old'],
+    [/\blẻ\b/gi, 'Single'], [/\bphút\b/gi, 'min'], [/\bbuổi\b/gi, 'Session'],
   ];
 
   // Translate service/category name
