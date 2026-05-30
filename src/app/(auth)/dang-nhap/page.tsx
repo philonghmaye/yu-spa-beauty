@@ -21,14 +21,8 @@ export default function LoginPage() {
       if (res?.error) {
         setError('Email/SĐT hoặc mật khẩu không đúng');
       } else {
-        // Check if user is admin to redirect appropriately
-        const roleRes = await fetch('/api/auth/role');
-        const { role } = await roleRes.json();
-        if (role === 'ADMIN') {
-          window.location.href = '/admin';
-        } else {
-          window.location.href = '/';
-        }
+        // Redirect to /admin — middleware will redirect non-admin users to /
+        window.location.href = '/admin';
       }
     } catch {
       setError('Đã có lỗi xảy ra');
