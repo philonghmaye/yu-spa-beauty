@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { FiCamera, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { useLang } from './LangContext';
 
 interface Props {
   isAdmin: boolean;
@@ -13,6 +14,7 @@ export default function PromoBanner({ isAdmin, initialBanner }: Props) {
   const [bannerUrl, setBannerUrl] = useState<string | null>(initialBanner);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { t } = useLang();
 
   // Compress image on client using canvas
   const compressImage = (file: File, maxWidth = 800, quality = 0.7): Promise<string> => {
@@ -146,11 +148,11 @@ export default function PromoBanner({ isAdmin, initialBanner }: Props) {
         minHeight: 100, display: 'flex', flexDirection: 'column' as const, justifyContent: 'center',
       }}>
         <div style={{ fontSize: '0.88rem', color: '#7c3aed', fontWeight: 600, marginBottom: 4 }}>
-          🎉 Ưu đãi đặc biệt
+          {t.specialOffer}
         </div>
-        <div style={{ fontSize: '0.95rem', color: '#374151', lineHeight: 1.5 }}>
-          Giảm <strong>20%</strong> cho lần đặt lịch đầu tiên!
-        </div>
+        <div style={{ fontSize: '0.95rem', color: '#374151', lineHeight: 1.5 }}
+          dangerouslySetInnerHTML={{ __html: t.firstBookingDiscount }}
+        />
 
         {/* Admin upload button */}
         {isAdmin && (
@@ -165,7 +167,7 @@ export default function PromoBanner({ isAdmin, initialBanner }: Props) {
               justifyContent: 'center', gap: 6,
             }}
           >
-            <FiCamera /> {uploading ? 'Đang tải...' : 'Tải ảnh banner lên'}
+            <FiCamera /> {uploading ? t.submitting : t.uploadBanner}
           </button>
         )}
       </div>
