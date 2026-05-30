@@ -3,16 +3,18 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FiHome, FiGrid, FiClock, FiUser } from 'react-icons/fi';
-
-const tabs = [
-  { href: '/m', label: 'Trang chủ', icon: <FiHome />, exact: true },
-  { href: '/m/dich-vu', label: 'Dịch vụ', icon: <FiGrid /> },
-  { href: '/m/hoat-dong', label: 'Hoạt động', icon: <FiClock /> },
-  { href: '/m/tai-khoan', label: 'Tài khoản', icon: <FiUser /> },
-];
+import { useLang } from './LangContext';
 
 export default function MobileTabBar() {
   const pathname = usePathname();
+  const { t } = useLang();
+
+  const tabs = [
+    { href: '/m', label: t.home, icon: <FiHome />, exact: true },
+    { href: '/m/dich-vu', label: t.services, icon: <FiGrid /> },
+    { href: '/m/hoat-dong', label: t.activity, icon: <FiClock /> },
+    { href: '/m/tai-khoan', label: t.account, icon: <FiUser /> },
+  ];
 
   // Hide tab bar on certain pages
   const hideOn = ['/m/dang-nhap', '/m/dang-ky', '/m/dat-lich'];

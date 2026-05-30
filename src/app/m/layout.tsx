@@ -1,7 +1,6 @@
-import Link from 'next/link';
 import './mobile.css';
-import { FiHome, FiClock, FiUser } from 'react-icons/fi';
 import MobileTabBar from './MobileTabBar';
+import MobileLangWrapper from './MobileLangWrapper';
 
 export const metadata = {
   title: 'YURI SPA BEAUTY — Đặt lịch Spa',
@@ -12,8 +11,10 @@ export const metadata = {
 export default function MobileLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="mobile-app">
-      {children}
-      <MobileTabBar />
+      <MobileLangWrapper>
+        {children}
+        <MobileTabBar />
+      </MobileLangWrapper>
     </div>
   );
 }
