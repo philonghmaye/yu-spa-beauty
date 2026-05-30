@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FiSearch, FiStar, FiMapPin, FiArrowLeft } from 'react-icons/fi';
+import { useLang } from './LangContext';
 
 interface StaffItem {
   id: string;
@@ -34,6 +35,7 @@ export default function StaffList({
 }) {
   const router = useRouter();
   const [search, setSearch] = useState('');
+  const { t, tn } = useLang();
 
   // Filter staff: if serviceFilter is set, only show staff who have that service
   const staffPool = serviceFilter
@@ -79,7 +81,7 @@ export default function StaffList({
           <FiSearch />
           <input
             type="text"
-            placeholder="Tìm kiếm kỹ thuật viên..."
+            placeholder={t.searchService}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -89,9 +91,9 @@ export default function StaffList({
       {/* Service Info Banner */}
       {serviceFilter && (
         <div className="m-service-filter-banner">
-          <div className="m-service-filter-label">Chọn kỹ thuật viên cho dịch vụ</div>
-          <div className="m-service-filter-name">{serviceFilter.name}</div>
-          <div className="m-service-filter-cat">{serviceFilter.categoryName}</div>
+          <div className="m-service-filter-label">{t.chooseYourTechnician}</div>
+          <div className="m-service-filter-name">{tn(serviceFilter.name)}</div>
+          <div className="m-service-filter-cat">{tn(serviceFilter.categoryName)}</div>
         </div>
       )}
 
@@ -118,16 +120,16 @@ export default function StaffList({
                 <div className="m-staff-rating">
                   <span className="star">★</span>
                   <strong>{staff.rating}</strong>
-                  <span className="count">({staff.reviewCount} đánh giá)</span>
+                  <span className="count">({staff.reviewCount} {t.reviews})</span>
                 </div>
                 <div className="m-staff-avail">
                   <FiMapPin style={{ verticalAlign: 'middle', marginRight: 2 }} /> YURI SPA BEAUTY
                 </div>
                 <div className="m-staff-bottom">
                   <span style={{ fontSize: '0.78rem', color: 'var(--neutral-400)' }}>
-                    {staff.services.length} dịch vụ
+                    {staff.services.length} {t.serviceCount}
                   </span>
-                  <span className="m-btn-book">Chọn</span>
+                  <span className="m-btn-book">{t.bookNow}</span>
                 </div>
               </div>
             </div>
@@ -158,7 +160,7 @@ export default function StaffList({
                   <span style={{ fontSize: '0.78rem', color: 'var(--neutral-400)' }}>
                     {staff.services.length} dịch vụ
                   </span>
-                  <span className="m-btn-book">Đặt</span>
+                  <span className="m-btn-book">{t.bookNow}</span>
                 </div>
               </div>
             </div>
@@ -167,7 +169,7 @@ export default function StaffList({
       )) : (
         <div className="m-empty">
           <div className="icon">🔍</div>
-          <p>Không tìm thấy kỹ thuật viên{serviceFilter ? ' cho dịch vụ này' : ''}</p>
+          <p>{t.noResults}</p>
         </div>
       )}
     </>

@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiChevronRight, FiSearch } from 'react-icons/fi';
+import { useLang } from '../../LangContext';
 
 interface ServiceItem {
   id: string;
@@ -49,6 +50,7 @@ export default function StaffBooking({
   services: ServiceItem[];
 }) {
   const router = useRouter();
+  const { t, tn } = useLang();
   // Group services by category
   const grouped = services.reduce((acc, s) => {
     if (!acc[s.category]) acc[s.category] = [];
@@ -97,7 +99,7 @@ export default function StaffBooking({
 
   return (
     <div className="m-service-section">
-      <h2>Dịch vụ của tôi</h2>
+      <h2>{t.services}</h2>
 
       {/* Category Filter Chips */}
       <div className="m-staff-category-chips">
@@ -111,7 +113,7 @@ export default function StaffBooking({
               onClick={() => handleToggleCategory(cat)}
             >
               <span className="m-staff-cat-chip-emoji">{emoji}</span>
-              <span className="m-staff-cat-chip-name">{cat}</span>
+              <span className="m-staff-cat-chip-name">{tn(cat)}</span>
             </button>
           );
         })}
@@ -125,7 +127,7 @@ export default function StaffBooking({
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Tìm tên dịch vụ..."
+            placeholder={t.searchService}
             style={{
               width: '100%', padding: '10px 14px 10px 36px', borderRadius: 'var(--radius-full)',
               border: '1px solid var(--neutral-200)', fontSize: '0.88rem',
@@ -140,9 +142,9 @@ export default function StaffBooking({
         <div className="m-staff-services-list">
           {filteredServices.map((service) => (
             <div key={service.id} className="m-service-item">
-              <div className="m-service-item-name">{service.name}</div>
+              <div className="m-service-item-name">{tn(service.name)}</div>
               <div className="m-duration-chips">
-                <span className="m-duration-chip active">{service.duration} phút</span>
+                <span className="m-duration-chip active">{service.duration} {t.minutes}</span>
               </div>
               <div className="m-service-item-bottom">
                 <span className="m-service-price">
@@ -157,7 +159,7 @@ export default function StaffBooking({
                     formatCurrency(service.price)
                   )}
                 </span>
-                <button className="m-btn-book" onClick={() => handleBook(service)}>Đặt</button>
+                <button className="m-btn-book" onClick={() => handleBook(service)}>{t.bookNow}</button>
               </div>
             </div>
           ))}
@@ -166,14 +168,14 @@ export default function StaffBooking({
 
       {selectedCategory && filteredServices.length === 0 && search.trim() && (
         <div style={{ textAlign: 'center', padding: '24px 16px', color: 'var(--neutral-400)', fontSize: '0.88rem' }}>
-          Không tìm thấy dịch vụ "{search}"
+          {t.noResults}
         </div>
       )}
 
       {/* Show all services when no category selected */}
       {!selectedCategory && (
         <div className="m-staff-services-hint">
-          <p>Chọn nhóm dịch vụ để xem chi tiết</p>
+          <p>{t.chooseYourTechnician}</p>
         </div>
       )}
     </div>
