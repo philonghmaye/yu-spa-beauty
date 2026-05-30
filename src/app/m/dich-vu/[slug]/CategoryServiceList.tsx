@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { FiClock, FiSearch } from 'react-icons/fi';
 import { formatCurrency } from '@/lib/utils';
+import { useLang } from '../../LangContext';
 
 interface Service {
   id: string;
@@ -16,6 +17,7 @@ interface Service {
 }
 
 export default function CategoryServiceList({ services, categorySlug }: { services: Service[]; categorySlug: string }) {
+  const { t, tn } = useLang();
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
@@ -27,7 +29,7 @@ export default function CategoryServiceList({ services, categorySlug }: { servic
   return (
     <div className="m-catdetail-list">
       <div className="m-catdetail-list-header">
-        <h2>Danh sách dịch vụ</h2>
+        <h2>{t.servicesCatalog}</h2>
       </div>
 
       {/* Search */}
@@ -37,7 +39,7 @@ export default function CategoryServiceList({ services, categorySlug }: { servic
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Tìm tên dịch vụ..."
+          placeholder={t.searchService}
           style={{
             width: '100%', padding: '10px 14px 10px 36px', borderRadius: 'var(--radius-full)',
             border: '1px solid var(--neutral-200)', fontSize: '0.88rem',
@@ -69,14 +71,14 @@ export default function CategoryServiceList({ services, categorySlug }: { servic
             <div className="m-catdetail-service-content">
               <div className="m-catdetail-service-top">
                 <div className="m-catdetail-service-info">
-                  <h3 className="m-catdetail-service-name">{service.name}</h3>
+                  <h3 className="m-catdetail-service-name">{tn(service.name)}</h3>
                   {service.description && (
                     <p className="m-catdetail-service-desc">{service.description}</p>
                   )}
                   <div className="m-catdetail-service-meta">
                     {service.duration > 0 && (
                       <span className="m-catdetail-meta-item">
-                        <FiClock style={{ fontSize: '0.72rem' }} /> {service.duration} phút
+                        <FiClock style={{ fontSize: '0.72rem' }} /> {service.duration} {t.minutes}
                       </span>
                     )}
                   </div>
@@ -104,7 +106,7 @@ export default function CategoryServiceList({ services, categorySlug }: { servic
                   href={`/m/kham-pha?service=${service.id}`}
                   className="m-catdetail-book-btn"
                 >
-                  Đặt lịch
+                  {t.bookNow}
                 </Link>
               </div>
             </div>
@@ -114,7 +116,7 @@ export default function CategoryServiceList({ services, categorySlug }: { servic
 
       {filtered.length === 0 && search.trim() && (
         <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--neutral-400)', fontSize: '0.88rem' }}>
-          Không tìm thấy dịch vụ "{search}"
+          {t.noResults}
         </div>
       )}
 

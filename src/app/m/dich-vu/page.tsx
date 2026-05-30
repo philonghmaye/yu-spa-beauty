@@ -1,10 +1,9 @@
 export const dynamic = 'force-dynamic';
 
 import prisma from '@/lib/prisma';
-import Link from 'next/link';
-import { FiArrowLeft, FiChevronRight } from 'react-icons/fi';
+import ServiceCatalogContent from './ServiceCatalogContent';
 
-// Category images mapped by slug — all 23 categories
+// Category images mapped by slug
 const categoryImages: Record<string, string> = {
   'nails':                  '/images/cat-nails.png',
   'noi-mi':                 '/images/cat-eyelash.png',
@@ -39,62 +38,15 @@ function getCategoryImage(slug: string, dbImage: string | null): string {
 export default async function ServiceCatalogPage() {
   const categories = await prisma.category.findMany({
     where: { isActive: true },
-    include: {
-      services: {
-        where: { isActive: true },
-        orderBy: { sortOrder: 'asc' },
-        select: { id: true, name: true, price: true, duration: true, image: true },
-      },
-    },
     orderBy: { sortOrder: 'asc' },
   });
 
-  return (
-    <>
-      {/* Top bar */}
-      <div className="m-topbar">
-        <Link href="/m" className="m-topbar-back">
-          <FiArrowLeft />
-        </Link>
-        <div className="m-topbar-title">Dịch vụ & Sản phẩm</div>
-      </div>
+  const categoryData = categories.map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug,
+    image: getCategoryImage(cat.slug, cat.image),
+  }));
 
-      {/* Category Grid */}
-      <div className="m-catalog-grid">
-        {categories.map((cat, index) => {
-          const image = getCategoryImage(cat.slug, cat.image);
-
-          return (
-            <Link
-              key={cat.id}
-              href={`/m/dich-vu/${cat.slug}`}
-              className="m-catalog-card"
-              style={{ animationDelay: `${index * 0.08}s` }}
-            >
-              {/* Card with image */}
-              <div className="m-catalog-card-header">
-                <img
-                  src={image}
-                  alt={cat.name}
-                  className="m-catalog-card-img"
-                />
-                <div className="m-catalog-card-overlay" />
-              </div>
-
-              {/* Card Name */}
-              <div className="m-catalog-card-body">
-                <div className="m-catalog-card-name">{cat.name}</div>
-                <div className="m-catalog-card-arrow">
-                  <FiChevronRight />
-                </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-
-      {/* Bottom Spacing */}
-      <div style={{ height: 24 }} />
-    </>
-  );
+  return <ServiceCatalogContent categories={categoryData} />;
 }

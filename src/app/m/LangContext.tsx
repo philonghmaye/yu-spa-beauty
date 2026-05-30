@@ -30,6 +30,27 @@ const translations = {
     // Staff
     experience: 'năm KN',
     serviceCount: 'dịch vụ',
+    // Service pages
+    servicesCatalog: 'Dịch vụ & Sản phẩm',
+    searchService: 'Tìm kiếm dịch vụ...',
+    minutes: 'phút',
+    noResults: 'Không tìm thấy dịch vụ nào',
+    allActivities: 'Tất cả',
+    upcoming: 'Sắp tới',
+    completed: 'Hoàn thành',
+    noActivity: 'Chưa có hoạt động nào',
+    rate: 'Đánh giá',
+    rated: 'Đã đánh giá',
+    rateService: '⭐ Đánh giá dịch vụ',
+    tapToRate: 'Chạm để đánh giá',
+    shareExperience: 'Chia sẻ trải nghiệm của bạn... (tùy chọn)',
+    submitReview: 'Gửi đánh giá',
+    submitting: 'Đang gửi...',
+    excellent: 'Tuyệt vời!',
+    veryGood: 'Rất tốt!',
+    good: 'Tốt',
+    average: 'Bình thường',
+    poor: 'Kém',
   },
   en: {
     // Header
@@ -56,8 +77,65 @@ const translations = {
     // Staff
     experience: 'yrs exp',
     serviceCount: 'services',
+    // Service pages
+    servicesCatalog: 'Services & Products',
+    searchService: 'Search services...',
+    minutes: 'min',
+    noResults: 'No services found',
+    allActivities: 'All',
+    upcoming: 'Upcoming',
+    completed: 'Completed',
+    noActivity: 'No activities yet',
+    rate: 'Rate',
+    rated: 'Rated',
+    rateService: '⭐ Rate Service',
+    tapToRate: 'Tap to rate',
+    shareExperience: 'Share your experience... (optional)',
+    submitReview: 'Submit Review',
+    submitting: 'Submitting...',
+    excellent: 'Excellent!',
+    veryGood: 'Very good!',
+    good: 'Good',
+    average: 'Average',
+    poor: 'Poor',
   },
 };
+
+// Vietnamese → English name mapping for categories & services
+const nameTranslations: Record<string, string> = {
+  // Categories
+  'Nails': 'Nails',
+  'Nối mi': 'Eyelash Extensions',
+  'Massage': 'Massage',
+  'Chăm sóc da': 'Skin Care',
+  'Liệu trình': 'Treatment',
+  'Chăm sóc tóc': 'Hair Care',
+  'Trang điểm': 'Makeup',
+  'Waxing': 'Waxing',
+  'Spa': 'Spa',
+  // Common services
+  'Massage đầu 30p khách tây': 'Head Massage 30min (Tourist)',
+  'Massage body 60p': 'Body Massage 60min',
+  'Massage mặt': 'Facial Massage',
+  'Massage chân': 'Foot Massage',
+  'Massage toàn thân': 'Full Body Massage',
+  'Cắt da sơn gel khách tây': 'Gel Manicure (Tourist)',
+  'Sơn gel tay': 'Gel Nails - Hands',
+  'Sơn gel chân': 'Gel Nails - Feet',
+  'Design đơn giản khách tây': 'Simple Nail Design (Tourist)',
+  'Nối mi cụm': 'Cluster Lash Extensions',
+  'Nối mi sợi': 'Individual Lash Extensions',
+  'Nối mi 1:1': '1:1 Lash Extensions',
+  'Chăm sóc da mặt': 'Facial Treatment',
+  'Tẩy tế bào chết': 'Exfoliation',
+  'Đắp mặt nạ': 'Face Mask Treatment',
+  'Mở cửa da': 'Skin Opening Treatment',
+  'Gội đầu dưỡng sinh': 'Herbal Head Wash',
+  'Uốn tóc': 'Hair Perming',
+  'Nhuộm tóc': 'Hair Coloring',
+  'Cắt tóc': 'Haircut',
+};
+
 
 type Translations = typeof translations.vi;
 
@@ -65,12 +143,14 @@ interface LangContextType {
   lang: Lang;
   setLang: (lang: Lang) => void;
   t: Translations;
+  tn: (name: string) => string;
 }
 
 const LangContext = createContext<LangContextType>({
   lang: 'vi',
   setLang: () => {},
   t: translations.vi,
+  tn: (name: string) => name,
 });
 
 export function LangProvider({ children }: { children: ReactNode }) {
@@ -88,8 +168,14 @@ export function LangProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('app_lang', newLang);
   };
 
+  // Translate service/category name
+  const tn = (name: string) => {
+    if (lang === 'vi') return name;
+    return nameTranslations[name] || name;
+  };
+
   return (
-    <LangContext.Provider value={{ lang, setLang, t: translations[lang] }}>
+    <LangContext.Provider value={{ lang, setLang, t: translations[lang], tn }}>
       {children}
     </LangContext.Provider>
   );

@@ -26,7 +26,7 @@ interface Props {
 }
 
 export default function HomeContent({ userName, isAdmin, promoBanner, categories, staffWithRating }: Props) {
-  const { t } = useLang();
+  const { t, tn } = useLang();
 
   return (
     <>
@@ -92,7 +92,7 @@ export default function HomeContent({ userName, isAdmin, promoBanner, categories
         <div className="m-filters" style={{ padding: 0 }}>
           {categories.map(cat => (
             <Link key={cat.id} href={`/m/dich-vu/${cat.slug}`} className="m-chip" style={{ textDecoration: 'none' }}>
-              {cat.icon} {cat.name}
+              {cat.icon} {tn(cat.name)}
             </Link>
           ))}
         </div>
