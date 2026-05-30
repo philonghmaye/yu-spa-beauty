@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import Link from 'next/link';
 import { FiUser, FiLogOut, FiMonitor, FiSmartphone, FiTag, FiStar, FiGrid } from 'react-icons/fi';
+import AdminLogoutButton from './AdminLogoutButton';
 
 export default async function AdminSettingsPage() {
   const session = await auth();
@@ -75,16 +76,7 @@ export default async function AdminSettingsPage() {
         </Link>
 
         {/* Logout */}
-        <form action="/api/auth/signout" method="POST">
-          <button type="submit" style={{
-            width: '100%', padding: '12px', borderRadius: 10,
-            background: '#fff', color: '#ef4444', border: '1px solid #fee2e2',
-            fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          }}>
-            <FiLogOut /> Đăng xuất
-          </button>
-        </form>
+        <AdminLogoutButton />
       </div>
     </>
   );
