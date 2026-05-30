@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { FiHome, FiCalendar, FiScissors, FiUsers, FiUserCheck, FiBarChart2, FiGift, FiStar, FiSettings, FiArrowLeft } from 'react-icons/fi';
 import AdminNotificationBell from '@/components/AdminNotificationBell';
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 const adminNav = [
   { href: '/admin', label: 'Tổng quan', icon: <FiHome /> },
@@ -14,7 +16,12 @@ const adminNav = [
   { href: '/admin/cai-dat', label: 'Cài đặt', icon: <FiSettings /> },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  if (!session?.user || (session.user as { role?: string }).role !== 'ADMIN') {
+    redirect('/dang-nhap');
+  }
+
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
