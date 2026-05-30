@@ -279,3 +279,11 @@ model Payment {
   updatedAt       DateTime  @updatedAt
 }
 
+// ============================================
+// Settings (Key-Value)
+// ============================================
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

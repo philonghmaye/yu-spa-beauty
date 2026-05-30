@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { FiMessageCircle, FiArrowRight, FiStar, FiSettings } from 'react-icons/fi';
+import PromoBanner from './PromoBanner';
 
 export default async function MobileHomePage() {
   const session = await auth();
@@ -27,6 +28,10 @@ export default async function MobileHomePage() {
     include: { services: { where: { isActive: true }, take: 1 } },
     orderBy: { sortOrder: 'asc' },
   });
+
+  // Get promo banner setting
+  const bannerSetting = await prisma.setting.findUnique({ where: { key: 'promo_banner' } });
+  const promoBanner = bannerSetting?.value || null;
 
   // Get top staff for quick preview
   const topStaff = await prisma.employee.findMany({
@@ -77,11 +82,8 @@ export default async function MobileHomePage() {
         </div>
       </div>
 
-      {/* Welcome Banner */}
-      <div style={{ margin: '0 16px 16px', padding: '16px 20px', background: 'linear-gradient(135deg, var(--primary-50), var(--accent-light))', borderRadius: 'var(--radius)', border: '1px solid var(--primary-light)' }}>
-        <div style={{ fontSize: '0.82rem', color: 'var(--primary-dark)', fontWeight: 500 }}>🎉 Ưu đãi đặc biệt</div>
-        <div style={{ fontSize: '0.9rem', color: 'var(--neutral-700)', marginTop: 4 }}>Giảm <strong>20%</strong> cho lần đặt lịch đầu tiên!</div>
-      </div>
+      {/* Promo Banner */}
+      <PromoBanner isAdmin={isAdmin} initialBanner={promoBanner} />
 
       {/* Hero Service Cards */}
       <div style={{ padding: '0 16px' }}>
