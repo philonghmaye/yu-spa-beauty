@@ -21,7 +21,14 @@ export default function LoginPage() {
       if (res?.error) {
         setError('Email/SĐT hoặc mật khẩu không đúng');
       } else {
-        router.push('/');
+        // Check if user is admin to redirect appropriately
+        const sessionRes = await fetch('/api/auth/session');
+        const session = await sessionRes.json();
+        if (session?.user?.role === 'ADMIN') {
+          router.push('/admin');
+        } else {
+          router.push('/');
+        }
         router.refresh();
       }
     } catch {
