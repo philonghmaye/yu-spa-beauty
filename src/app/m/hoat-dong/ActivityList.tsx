@@ -5,6 +5,7 @@ import { getStatusLabel, getStatusColor } from '@/lib/utils';
 import { createReview } from '@/actions/account';
 import toast from 'react-hot-toast';
 import { FiStar, FiX } from 'react-icons/fi';
+import { useLang } from '../LangContext';
 
 interface Activity {
   id: string; date: string; startTime: string; endTime: string;
@@ -24,6 +25,11 @@ export default function ActivityList({ initialData, userId }: { initialData: Act
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set());
+  const { t, tn, lang } = useLang();
+
+  const statusLabels: Record<string, string> = lang === 'en' ? {
+    PENDING: 'Pending', CONFIRMED: 'Confirmed', COMPLETED: 'Completed', CANCELLED: 'Cancelled',
+  } : {};
 
   const filtered = initialData.filter(a => {
     if (filter === 'upcoming') return ['PENDING', 'CONFIRMED'].includes(a.status);
@@ -51,14 +57,14 @@ export default function ActivityList({ initialData, userId }: { initialData: Act
   return (
     <>
       <div className="m-topbar">
-        <span className="m-topbar-title" style={{ marginRight: 0 }}>Hoạt động</span>
+        <span className="m-topbar-title" style={{ marginRight: 0 }}>{lang === 'en' ? 'Activity' : 'Hoạt động'}</span>
       </div>
 
       <div className="m-filter-tabs">
         {[
-          { key: 'all', label: 'Tất cả' },
-          { key: 'upcoming', label: 'Sắp tới' },
-          { key: 'completed', label: 'Hoàn thành' },
+          { key: 'all', label: lang === 'en' ? 'All' : 'Tất cả' },
+          { key: 'upcoming', label: lang === 'en' ? 'Upcoming' : 'Sắp tới' },
+          { key: 'completed', label: lang === 'en' ? 'Completed' : 'Hoàn thành' },
         ].map(f => (
           <button key={f.key} className={`m-filter-tab ${filter === f.key ? 'active' : ''}`} onClick={() => setFilter(f.key)}>
             {f.label}
@@ -73,9 +79,9 @@ export default function ActivityList({ initialData, userId }: { initialData: Act
         return (
           <div key={a.id} className="m-activity-card">
             <div className="top">
-              <span className="service-name">{a.services.join(', ')}</span>
+              <span className="service-name">{a.services.map(s => tn(s)).join(', ')}</span>
               <span className={`badge badge-${getStatusColor(a.status)}`} style={{ fontSize: '0.72rem' }}>
-                {getStatusLabel(a.status)}
+                {statusLabels[a.status] || getStatusLabel(a.status)}
               </span>
             </div>
             <div className="details">
@@ -86,7 +92,7 @@ export default function ActivityList({ initialData, userId }: { initialData: Act
               <span className="price">{formatCurrency(a.totalAmount)}</span>
               {isReviewed && (
                 <span style={{ fontSize: '0.75rem', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <FiStar style={{ fill: '#f59e0b' }} /> Đã đánh giá
+                  <FiStar style={{ fill: '#f59e0b' }} /> {lang === 'en' ? 'Reviewed' : 'Đã đánh giá'}
                 </span>
               )}
               {canReview && (
@@ -100,7 +106,7 @@ export default function ActivityList({ initialData, userId }: { initialData: Act
                     display: 'flex', alignItems: 'center', gap: 4,
                   }}
                 >
-                  <FiStar style={{ fontSize: '0.7rem' }} /> Đánh giá
+                  <FiStar style={{ fontSize: '0.7rem' }} /> {lang === 'en' ? 'Review' : 'Đánh giá'}
                 </button>
               )}
             </div>
@@ -109,7 +115,7 @@ export default function ActivityList({ initialData, userId }: { initialData: Act
       }) : (
         <div className="m-empty">
           <div className="icon">📋</div>
-          <p>Chưa có hoạt động nào</p>
+          <p>{lang === 'en' ? 'No activity yet' : 'Chưa có hoạt động nào'}</p>
         </div>
       )}
 
@@ -131,7 +137,7 @@ export default function ActivityList({ initialData, userId }: { initialData: Act
             >
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>⭐ Đánh giá dịch vụ</h3>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>⭐ {lang === 'en' ? 'Rate Service' : 'Đánh giá dịch vụ'}</h3>
                 <button onClick={() => setReviewingId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
                   <FiX style={{ fontSize: '1.2rem', color: '#999' }} />
                 </button>
@@ -139,7 +145,7 @@ export default function ActivityList({ initialData, userId }: { initialData: Act
 
               {/* Service & Staff Info */}
               <div style={{ background: '#f9fafb', borderRadius: 12, padding: '12px 14px', marginBottom: 16 }}>
-                <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{activity?.services.join(', ')}</div>
+                <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{activity?.services.map(s => tn(s)).join(', ')}</div>
                 {activity?.employeeName && (
                   <div style={{ fontSize: '0.8rem', color: '#666', marginTop: 2 }}>👤 {activity.employeeName}</div>
                 )}
@@ -147,7 +153,7 @@ export default function ActivityList({ initialData, userId }: { initialData: Act
 
               {/* Star Rating */}
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: 8 }}>Chạm để đánh giá</div>
+                <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: 8 }}>{lang === 'en' ? 'Tap to rate' : 'Chạm để đánh giá'}</div>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
                   {[1, 2, 3, 4, 5].map(star => (
                     <button
@@ -166,7 +172,7 @@ export default function ActivityList({ initialData, userId }: { initialData: Act
                   ))}
                 </div>
                 <div style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 600, marginTop: 4 }}>
-                  {rating === 5 ? 'Tuyệt vời!' : rating === 4 ? 'Rất tốt!' : rating === 3 ? 'Tốt' : rating === 2 ? 'Bình thường' : 'Kém'}
+                  {rating === 5 ? t.excellent : rating === 4 ? t.veryGood : rating === 3 ? t.good : rating === 2 ? t.average : t.poor}
                 </div>
               </div>
 
@@ -174,7 +180,7 @@ export default function ActivityList({ initialData, userId }: { initialData: Act
               <textarea
                 value={comment}
                 onChange={e => setComment(e.target.value)}
-                placeholder="Chia sẻ trải nghiệm của bạn... (tùy chọn)"
+                placeholder={lang === 'en' ? 'Share your experience... (optional)' : 'Chia sẻ trải nghiệm của bạn... (tùy chọn)'}
                 rows={3}
                 style={{
                   width: '100%', padding: '12px 14px', borderRadius: 12,
@@ -195,7 +201,7 @@ export default function ActivityList({ initialData, userId }: { initialData: Act
                   fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer',
                 }}
               >
-                {submitting ? 'Đang gửi...' : 'Gửi đánh giá'}
+                {submitting ? t.submitting : (lang === 'en' ? 'Submit Review' : 'Gửi đánh giá')}
               </button>
             </div>
           </div>
