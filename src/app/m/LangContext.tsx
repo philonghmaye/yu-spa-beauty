@@ -397,10 +397,78 @@ export function LangProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('app_lang', newLang);
   };
 
+  // Keyword-based auto-translation for unmapped names
+  const keywordMap: [RegExp, string][] = [
+    // Body parts & areas
+    [/\bvùng\b/gi, 'Area:'], [/\bmặt\b/gi, 'Face'], [/\bmắt\b/gi, 'Eye'],
+    [/\bmôi\b/gi, 'Lip'], [/\bmũi\b/gi, 'Nose'], [/\bcằm\b/gi, 'Chin'],
+    [/\btrán\b/gi, 'Forehead'], [/\bmá\b/gi, 'Cheek'], [/\btay\b/gi, 'Arm'],
+    [/\bchân\b/gi, 'Leg'], [/\bnách\b/gi, 'Underarm'], [/\blưng\b/gi, 'Back'],
+    [/\bbụng\b/gi, 'Belly'], [/\bcổ\b/gi, 'Neck'], [/\bvai\b/gi, 'Shoulder'],
+    [/\bgáy\b/gi, 'Nape'], [/\bbikini\b/gi, 'Bikini'], [/\bria mép\b/gi, 'Mustache'],
+    [/\bthái dương\b/gi, 'Temple'], [/\brãnh cười\b/gi, 'Smile Line'],
+    [/\bhốc mắt\b/gi, 'Under Eye'], [/\bnọng cằm\b/gi, 'Double Chin'],
+    [/\bnhũ hoa\b/gi, 'Areola'], [/\bâm đạo\b/gi, 'Vaginal'],
+    [/\bbắp chân\b/gi, 'Calf'], [/\bbắp tay\b/gi, 'Upper Arm'],
+    [/\bhàm\b/gi, 'Jaw'], [/\btai\b/gi, 'Ear'], [/\bđầu\b/gi, 'Head'],
+
+    // Actions & treatments
+    [/\bmassage\b/gi, 'Massage'], [/\btiêm\b/gi, 'Injection'],
+    [/\btriệt\b/gi, 'Hair Removal'], [/\bwax\b/gi, 'Wax'],
+    [/\bphun\b/gi, 'Tattoo'], [/\bxăm\b/gi, 'Tattoo'],
+    [/\bxóa\b/gi, 'Removal'], [/\btháo\b/gi, 'Remove'],
+    [/\bđắp\b/gi, 'Apply'], [/\bsơn\b/gi, 'Polish'],
+    [/\bnối\b/gi, 'Extension'], [/\buốn\b/gi, 'Perm/Lift'],
+    [/\bnhuộm\b/gi, 'Color/Tint'], [/\bcắt\b/gi, 'Cut'],
+    [/\bnặn\b/gi, 'Extract'], [/\bđốt\b/gi, 'Burn/Remove'],
+    [/\btruyền\b/gi, 'IV Drip'], [/\bđiều trị\b/gi, 'Treatment'],
+    [/\btrị\b/gi, 'Treat'], [/\blàm\b/gi, 'Make'],
+    [/\btắm trắng\b/gi, 'Whitening Bath'], [/\bgội\b/gi, 'Wash'],
+    [/\bchăm sóc\b/gi, 'Care'], [/\bpeel\b/gi, 'Peel'],
+    [/\blăn kim\b/gi, 'Microneedling'],
+
+    // Products & types
+    [/\bgel\b/gi, 'Gel'], [/\bbột\b/gi, 'Acrylic'],
+    [/\bmi\b/gi, 'Lashes'], [/\bmóng\b/gi, 'Nail'],
+    [/\bda\b/gi, 'Skin'], [/\btóc\b/gi, 'Hair'],
+    [/\bmặt nạ\b/gi, 'Mask'], [/\bmụn\b/gi, 'Acne'],
+    [/\bnám\b/gi, 'Melasma'], [/\bthâm\b/gi, 'Dark Spot'],
+    [/\bnếp nhăn\b/gi, 'Wrinkle'], [/\bsẹo\b/gi, 'Scar'],
+    [/\bcollagen\b/gi, 'Collagen'], [/\bfiller\b/gi, 'Filler'],
+    [/\bbotox\b/gi, 'Botox'], [/\bvitamin\b/gi, 'Vitamin'],
+    [/\bparaffin\b/gi, 'Paraffin'], [/\bretinol\b/gi, 'Retinol'],
+
+    // Qualifiers
+    [/\bfull\b/gi, 'Full'], [/\bcao cấp\b/gi, 'Premium'],
+    [/\bchuyên sâu\b/gi, 'Advanced'], [/\bcơ bản\b/gi, 'Basic'],
+    [/\bmới\b/gi, 'New'], [/\bcũ\b/gi, 'Old'],
+    [/\blẻ\b/gi, 'Single'], [/\b1 bộ\b/gi, '(Full Set)'],
+    [/\b1 ngón\b/gi, '(1 Nail)'], [/\b1 buổi\b/gi, '1 Session'],
+    [/\b10 buổi\b/gi, '10 Sessions'], [/\b3 lần\b/gi, '3 Sessions'],
+    [/\b5 lần\b/gi, '5 Sessions'],
+    [/\bkhách tây\b/gi, ''], [/\bgiá tết\b/gi, '(Holiday)'],
+    [/\bphút\b/gi, 'min'], [/\bbuổi\b/gi, 'Session'],
+  ];
+
   // Translate service/category name
   const tn = (name: string) => {
     if (lang === 'vi') return name;
-    return nameTranslations[name] || name;
+    // Try exact match first
+    if (nameTranslations[name]) return nameTranslations[name];
+    // Try case-insensitive match
+    const lower = name.toLowerCase();
+    for (const key of Object.keys(nameTranslations)) {
+      if (key.toLowerCase() === lower) return nameTranslations[key];
+    }
+    // Auto-translate using keyword replacement
+    let result = name;
+    for (const [pattern, replacement] of keywordMap) {
+      result = result.replace(pattern, replacement);
+    }
+    // Clean up: remove extra spaces, trim
+    result = result.replace(/\s+/g, ' ').trim();
+    // If result changed, return it; otherwise return original
+    return result !== name ? result : name;
   };
 
   return (
