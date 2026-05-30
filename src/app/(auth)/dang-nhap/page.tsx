@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { FiLogIn } from 'react-icons/fi';
 
@@ -10,24 +9,29 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const res = await signIn('credentials', { login, password, redirect: false });
+      const res = await signIn('credentials', {
+        login,
+        password,
+        redirect: false,
+        callbackUrl: '/admin',
+      });
       if (res?.error) {
         setError('Email/SĐT hoặc mật khẩu không đúng');
+        setLoading(false);
       } else {
-        // Redirect to /admin — middleware will redirect non-admin users to /
-        window.location.href = '/admin';
+        // Use res.url which includes the callbackUrl
+        window.location.href = res?.url || '/admin';
       }
     } catch {
       setError('Đã có lỗi xảy ra');
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
