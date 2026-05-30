@@ -8,5 +8,5 @@ export default async function ActivityPage() {
   if (!session?.user?.id) redirect('/m/dang-nhap');
 
   const activities = await getCustomerActivity(session.user.id);
-  return <ActivityList initialData={activities} />;
+  return <ActivityList initialData={activities} userId={session.user.id} />;
 }

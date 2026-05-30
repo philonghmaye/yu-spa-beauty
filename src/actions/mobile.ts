@@ -154,6 +154,7 @@ export async function getCustomerActivity(userId: string, filter?: string) {
     include: {
       services: { include: { service: { select: { name: true } } } },
       employee: { include: { user: { select: { name: true } } } },
+      review: { select: { id: true, rating: true } },
     },
     orderBy: { createdAt: 'desc' },
     take: 50,
@@ -167,6 +168,9 @@ export async function getCustomerActivity(userId: string, filter?: string) {
     status: a.status,
     services: a.services.map((s) => s.service.name),
     employeeName: a.employee?.user.name || null,
+    employeeId: a.employeeId || null,
     totalAmount: a.finalAmount,
+    hasReview: !!a.review,
+    reviewRating: a.review?.rating || null,
   }));
 }
