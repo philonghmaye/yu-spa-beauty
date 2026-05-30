@@ -8,20 +8,24 @@ import { FiSearch } from 'react-icons/fi';
 interface Category {
   id: string;
   name: string;
-  icon: string;
+  slug: string;
+  icon: string | null;
   services: { id: string }[];
 }
 
 interface Service {
   id: string;
   name: string;
+  slug: string;
   description: string | null;
   price: number;
   discountPrice: number | null;
   duration: number;
+  image: string | null;
   isActive: boolean;
   isFeatured: boolean;
-  category: { id: string; name: string; icon: string };
+  categoryId: string;
+  category: { id: string; name: string; icon: string | null };
   [key: string]: unknown;
 }
 
