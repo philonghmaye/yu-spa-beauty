@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { FiArrowLeft, FiTag } from 'react-icons/fi';
+import { FiArrowLeft, FiTag, FiShare2 } from 'react-icons/fi';
 import CategoryServiceList from './CategoryServiceList';
 import { useLang } from '../../LangContext';
+import { shareService } from '@/lib/native';
 
 interface ServiceData {
   id: string; name: string; slug: string; description: string | null;
@@ -24,10 +25,16 @@ export default function CategoryDetailContent({ category, heroImage, services }:
   return (
     <>
       {/* Top bar */}
-      <div className="m-topbar" style={{ background: 'transparent', borderBottom: 'none', position: 'absolute', zIndex: 10 }}>
+      <div className="m-topbar" style={{ background: 'transparent', borderBottom: 'none', position: 'absolute', zIndex: 10, justifyContent: 'space-between' }}>
         <Link href="/m/dich-vu" className="m-topbar-back" style={{ background: 'rgba(0,0,0,0.25)', color: '#fff', backdropFilter: 'blur(4px)' }}>
           <FiArrowLeft />
         </Link>
+        <button
+          onClick={() => shareService(tn(category.name), `${window.location.origin}/m/dich-vu/${category.slug}`)}
+          style={{ background: 'rgba(0,0,0,0.25)', color: '#fff', backdropFilter: 'blur(4px)', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+        >
+          <FiShare2 />
+        </button>
       </div>
 
       {/* Category Hero */}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FiCheck } from 'react-icons/fi';
+import { hapticSuccess } from '@/lib/native';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('vi-VN').format(n) + ' đ';
@@ -17,7 +18,11 @@ export default function BookingResultPage() {
 
   useEffect(() => {
     const data = sessionStorage.getItem('mobileBookingResult');
-    if (data) setResult(JSON.parse(data));
+    if (data) {
+      setResult(JSON.parse(data));
+      // Rung haptic khi đặt lịch thành công (native iOS)
+      hapticSuccess();
+    }
   }, []);
 
   if (!result) return (

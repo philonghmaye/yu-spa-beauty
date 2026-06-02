@@ -1,6 +1,7 @@
 import './mobile.css';
 import MobileTabBar from './MobileTabBar';
 import MobileLangWrapper from './MobileLangWrapper';
+import NativeInit from './NativeInit';
 
 export const metadata = {
   title: 'YURI SPA BEAUTY — Đặt lịch Spa',
@@ -12,6 +13,7 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
   return (
     <div className="mobile-app">
       <MobileLangWrapper>
+        <NativeInit />
         {children}
         <MobileTabBar />
       </MobileLangWrapper>
