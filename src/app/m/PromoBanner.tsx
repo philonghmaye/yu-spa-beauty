@@ -1,20 +1,27 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { FiCamera, FiX } from 'react-icons/fi';
+import { FiCamera, FiX, FiEdit2, FiCheck } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useLang } from './LangContext';
 
 interface Props {
   isAdmin: boolean;
   initialBanner: string | null;
+  initialPromoText: string;
 }
 
-export default function PromoBanner({ isAdmin, initialBanner }: Props) {
+export default function PromoBanner({ isAdmin, initialBanner, initialPromoText }: Props) {
   const [bannerUrl, setBannerUrl] = useState<string | null>(initialBanner);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { t } = useLang();
+
+  // Editable promo text state
+  const [promoText, setPromoText] = useState(initialPromoText);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(initialPromoText);
+  const [saving, setSaving] = useState(false);
 
   // Compress image on client using canvas
   const compressImage = (file: File, maxWidth = 800, quality = 0.7): Promise<string> => {
@@ -86,6 +93,28 @@ export default function PromoBanner({ isAdmin, initialBanner }: Props) {
     }
   };
 
+  // Save promo text
+  const handleSaveText = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/settings/banner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'promo_text', value: editText }),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      setPromoText(editText);
+      setIsEditing(false);
+      toast.success('Cập nhật nội dung ưu đãi thành công!');
+    } catch {
+      toast.error('Có lỗi xảy ra');
+    }
+    setSaving(false);
+  };
+
+  // Display text: use saved text or default from translations
+  const displayText = promoText || t.firstBookingDiscount;
+
   // Banner with image
   if (bannerUrl) {
     return (
@@ -147,15 +176,76 @@ export default function PromoBanner({ isAdmin, initialBanner }: Props) {
         boxShadow: '0 2px 12px rgba(124,58,237,0.08)',
         minHeight: 100, display: 'flex', flexDirection: 'column' as const, justifyContent: 'center',
       }}>
-        <div style={{ fontSize: '0.88rem', color: '#7c3aed', fontWeight: 600, marginBottom: 4 }}>
-          {t.specialOffer}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <div style={{ fontSize: '0.88rem', color: '#7c3aed', fontWeight: 600 }}>
+            {t.specialOffer}
+          </div>
+          {/* Admin edit text button */}
+          {isAdmin && !isEditing && (
+            <button
+              onClick={() => { setEditText(promoText || t.firstBookingDiscount); setIsEditing(true); }}
+              style={{
+                background: 'rgba(124,58,237,0.1)', border: 'none', borderRadius: 8,
+                padding: '4px 10px', cursor: 'pointer', color: '#7c3aed',
+                display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', fontWeight: 600,
+              }}
+              title="Sửa nội dung"
+            >
+              <FiEdit2 style={{ fontSize: '0.7rem' }} /> Sửa
+            </button>
+          )}
         </div>
-        <div style={{ fontSize: '0.95rem', color: '#374151', lineHeight: 1.5 }}
-          dangerouslySetInnerHTML={{ __html: t.firstBookingDiscount }}
-        />
+
+        {/* Editing mode */}
+        {isEditing ? (
+          <div style={{ marginTop: 4 }}>
+            <textarea
+              value={editText}
+              onChange={e => setEditText(e.target.value)}
+              rows={3}
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 10,
+                border: '1.5px solid #7c3aed', fontSize: '0.88rem', lineHeight: 1.5,
+                fontFamily: 'inherit', resize: 'vertical', outline: 'none',
+                background: '#fff',
+              }}
+              placeholder="Nhập nội dung ưu đãi..."
+              autoFocus
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <button
+                onClick={handleSaveText}
+                disabled={saving}
+                style={{
+                  flex: 1, padding: '8px 16px', borderRadius: 10,
+                  background: '#7c3aed', border: 'none', color: '#fff',
+                  fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                  opacity: saving ? 0.7 : 1,
+                }}
+              >
+                <FiCheck /> {saving ? 'Đang lưu...' : 'Lưu'}
+              </button>
+              <button
+                onClick={() => setIsEditing(false)}
+                style={{
+                  padding: '8px 16px', borderRadius: 10,
+                  background: '#f3f4f6', border: 'none', color: '#666',
+                  fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ fontSize: '0.95rem', color: '#374151', lineHeight: 1.5 }}
+            dangerouslySetInnerHTML={{ __html: displayText }}
+          />
+        )}
 
         {/* Admin upload button */}
-        {isAdmin && (
+        {isAdmin && !isEditing && (
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading}

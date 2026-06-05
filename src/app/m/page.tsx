@@ -30,6 +30,10 @@ export default async function MobileHomePage() {
   const bannerSetting = await prisma.setting.findUnique({ where: { key: 'promo_banner' } });
   const promoBanner = bannerSetting?.value || null;
 
+  // Get promo text setting
+  const promoTextSetting = await prisma.setting.findUnique({ where: { key: 'promo_text' } });
+  const promoText = promoTextSetting?.value || '';
+
   // Get top staff for quick preview
   const topStaff = await prisma.employee.findMany({
     where: { isAvailable: true, user: { isActive: true } },
@@ -67,6 +71,7 @@ export default async function MobileHomePage() {
       userName={userName}
       isAdmin={isAdmin}
       promoBanner={promoBanner}
+      promoText={promoText}
       categories={categoryData}
       staffWithRating={staffWithRating}
     />

@@ -21,11 +21,12 @@ interface Props {
   userName: string;
   isAdmin: boolean;
   promoBanner: string | null;
+  promoText: string;
   categories: CategoryData[];
   staffWithRating: StaffData[];
 }
 
-export default function HomeContent({ userName, isAdmin, promoBanner, categories, staffWithRating }: Props) {
+export default function HomeContent({ userName, isAdmin, promoBanner, promoText, categories, staffWithRating }: Props) {
   const { t, tn } = useLang();
 
   return (
@@ -57,7 +58,7 @@ export default function HomeContent({ userName, isAdmin, promoBanner, categories
       </div>
 
       {/* Promo Banner */}
-      <PromoBanner isAdmin={isAdmin} initialBanner={promoBanner} />
+      <PromoBanner isAdmin={isAdmin} initialBanner={promoBanner} initialPromoText={promoText} />
 
       {/* Hero Service Cards */}
       <div style={{ padding: '0 16px' }}>
