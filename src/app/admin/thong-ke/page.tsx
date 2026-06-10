@@ -108,16 +108,27 @@ async function getStatsData() {
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([year, data]) => ({ year, ...data }));
 
-    // Batch fetch service names
+    // Batch fetch service & staff names concurrently
     const serviceIds = serviceStats.map((s) => s.serviceId);
-    const servicesMap = serviceIds.length > 0
-      ? new Map(
-          (await prisma.service.findMany({
+    const employeeIds = staffStats.filter((s) => s.employeeId).map((s) => s.employeeId!);
+
+    const [servicesList, employeesList] = await Promise.all([
+      serviceIds.length > 0
+        ? prisma.service.findMany({
             where: { id: { in: serviceIds } },
             select: { id: true, name: true },
-          })).map((s) => [s.id, s.name])
-        )
-      : new Map<string, string>();
+          })
+        : Promise.resolve([]),
+      employeeIds.length > 0
+        ? prisma.employee.findMany({
+            where: { id: { in: employeeIds } },
+            include: { user: { select: { name: true } } },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const servicesMap = new Map(servicesList.map((s) => [s.id, s.name]));
+    const employeesMap = new Map(employeesList.map((e) => [e.id, e.user.name]));
 
     const topServices = serviceStats.map((s) => ({
       name: servicesMap.get(s.serviceId) || 'Unknown',
@@ -125,16 +136,7 @@ async function getStatsData() {
       revenue: s._sum.price || 0,
     }));
 
-    // Batch fetch staff names
-    const employeeIds = staffStats.filter((s) => s.employeeId).map((s) => s.employeeId!);
-    const employeesMap = employeeIds.length > 0
-      ? new Map(
-          (await prisma.employee.findMany({
-            where: { id: { in: employeeIds } },
-            include: { user: { select: { name: true } } },
-          })).map((e) => [e.id, e.user.name])
-        )
-      : new Map<string, string>();
+
 
     const topStaff = staffStats
       .filter((s) => s.employeeId)

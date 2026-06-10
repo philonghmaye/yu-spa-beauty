@@ -33,8 +33,11 @@ async function getRecentAppointments() {
 }
 
 export default async function AdminDashboard() {
-  const stats = await getStats();
-  const appointments = await getRecentAppointments();
+  const [stats, appointments] = await Promise.all([
+    getStats(),
+    getRecentAppointments(),
+  ]);
+
 
   const defaultAppointments = [
     { id: '1', customer: 'Nguyễn Thị Mai', services: 'Chăm sóc da mặt', date: '14/05/2026', time: '09:00', status: 'CONFIRMED', amount: 350000 },

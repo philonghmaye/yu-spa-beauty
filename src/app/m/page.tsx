@@ -5,33 +5,23 @@ import HomeContent from './HomeContent';
 export default async function MobileHomePage() {
   const session = await auth();
 
-  // Get user info if logged in
-  let userName = '';
-  let isAdmin = false;
-  if (session?.user?.id) {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { name: true, avatar: true, role: true },
-    });
-    if (user) {
-      userName = user.name;
-      isAdmin = user.role === 'ADMIN';
-    }
-  }
+  // Chuẩn bị các Promise truy vấn đồng thời
+  const userPromise = session?.user?.id
+    ? prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, avatar: true, role: true },
+      })
+    : Promise.resolve(null);
 
-  // Get service categories for cards
-  const categories = await prisma.category.findMany({
+  const categoriesPromise = prisma.category.findMany({
     where: { isActive: true },
     include: { services: { where: { isActive: true }, take: 1 } },
     orderBy: { sortOrder: 'asc' },
   });
 
-  // Get promo banner setting
-  const bannerSetting = await prisma.setting.findUnique({ where: { key: 'promo_banner' } });
-  const promoBanner = bannerSetting?.value || null;
+  const bannerPromise = prisma.setting.findUnique({ where: { key: 'promo_banner' } });
 
-  // Get top staff for quick preview
-  const topStaff = await prisma.employee.findMany({
+  const topStaffPromise = prisma.employee.findMany({
     where: { isAvailable: true, user: { isActive: true } },
     include: {
       user: { select: { name: true, avatar: true } },
@@ -43,6 +33,24 @@ export default async function MobileHomePage() {
     },
     take: 5,
   });
+
+  // Thực thi song song tất cả các truy vấn DB
+  const [user, categories, bannerSetting, topStaff] = await Promise.all([
+    userPromise,
+    categoriesPromise,
+    bannerPromise,
+    topStaffPromise,
+  ]);
+
+  let userName = '';
+  let isAdmin = false;
+  if (user) {
+    userName = user.name;
+    isAdmin = user.role === 'ADMIN';
+  }
+
+  const promoBanner = bannerSetting?.value || null;
+
 
   const staffWithRating = topStaff.map((s) => {
     const reviews = s.appointments.map((a) => a.review).filter(Boolean);
