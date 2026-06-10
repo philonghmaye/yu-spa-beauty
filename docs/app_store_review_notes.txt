@@ -1,0 +1,38 @@
+================================================================================
+APP STORE REVIEW NOTES TEMPLATE - YURI SPA BEAUTY
+================================================================================
+
+Dear App Review Team,
+
+This application, "Yuri Spa Beauty", is designed to provide booking and appointment management services for customers of our physical spa salon. 
+
+Please find below details regarding the functionalities and payment methods used in the app for your review:
+
+1. Nature of Services (Guideline 3.1.5 - Physical Goods and Services):
+- All services booked via this app are PHYSICAL services performed in person at our physical spa salon location (such as skin care treatments, nail care, eyelashes, massage therapies, and hair washing).
+- No digital content, virtual items, or online services are sold or unlocked inside this app.
+
+2. Booking & Payment Explanation (Guideline 3.1.1 & 3.1.5):
+- The mobile application is used solely for scheduling appointments.
+- There are NO in-app payments or transactions conducted within the mobile application.
+- The app only offers a "Pay at Counter" (Pay physically at the salon) payment option. Therefore, it does not process any payments directly, ensuring full compliance.
+
+
+3. Demo / Test Account Credentials:
+To assist you in testing all flows, including service browsing, booking, and history:
+- Phone / Username: [INSERT_TEST_PHONE_HERE - e.g., 0912345678]
+- Password: [INSERT_TEST_PASSWORD_HERE]
+- Note: This user has been pre-configured with active bookings in the "Activity" (Lịch sử hoạt động) section for your convenience.
+
+4. Account Deletion:
+- Users can easily delete their account at any time. Inside the app, navigate to: 
+  "Account" (Tài khoản) -> "Personal Information" (Thông tin cá nhân) -> Click "Xóa tài khoản vĩnh viễn" (Delete Account Permanently) at the bottom.
+- This action is processed via secure APIs to remove all their personal data from our database permanently.
+
+If you have any questions or require additional details, please let us know. 
+
+Thank you for your time and guidance.
+
+Sincerely,
+Yuri Spa Beauty Team
+================================================================================

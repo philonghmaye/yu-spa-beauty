@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   // Trỏ tới URL Vercel khi chạy trên iOS
   // Thay URL bên dưới bằng domain Vercel thật của bạn
   server: {
-    url: 'https://yu-spa-beauty.vercel.app/m',
+    url: 'https://yuri-spa-beauty.vercel.app/m',
     cleartext: false,
   },
   plugins: {

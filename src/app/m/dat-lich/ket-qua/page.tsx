@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FiCheck } from 'react-icons/fi';
-import { hapticSuccess } from '@/lib/native';
+import { hapticSuccess, scheduleAppointmentReminder } from '@/lib/native';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('vi-VN').format(n) + ' đ';
@@ -19,9 +19,21 @@ export default function BookingResultPage() {
   useEffect(() => {
     const data = sessionStorage.getItem('mobileBookingResult');
     if (data) {
-      setResult(JSON.parse(data));
+      const parsed = JSON.parse(data);
+      setResult(parsed);
       // Rung haptic khi đặt lịch thành công (native iOS)
       hapticSuccess();
+
+      // Lên lịch thông báo nhắc hẹn cục bộ trước 2 giờ (Native feature)
+      if (parsed.id && parsed.appointmentDate && parsed.startTime) {
+        const scheduledDate = new Date(`${parsed.appointmentDate}T${parsed.startTime}`);
+        scheduleAppointmentReminder(
+          parsed.id,
+          'Yuri Spa Beauty - Nhắc lịch hẹn',
+          `Bạn có lịch hẹn dịch vụ "${parsed.services.join(', ')}" lúc ${parsed.startTime} hôm nay.`,
+          scheduledDate
+        ).catch(err => console.error('Failed to schedule local notification:', err));
+      }
     }
   }, []);
 
