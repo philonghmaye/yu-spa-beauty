@@ -20,6 +20,7 @@ export default async function MobileHomePage() {
   });
 
   const bannerPromise = prisma.setting.findUnique({ where: { key: 'promo_banner' } });
+  const promoTextPromise = prisma.setting.findUnique({ where: { key: 'promo_text' } });
 
   const topStaffPromise = prisma.employee.findMany({
     where: { isAvailable: true, user: { isActive: true } },
@@ -35,10 +36,11 @@ export default async function MobileHomePage() {
   });
 
   // Thực thi song song tất cả các truy vấn DB
-  const [user, categories, bannerSetting, topStaff] = await Promise.all([
+  const [user, categories, bannerSetting, promoTextSetting, topStaff] = await Promise.all([
     userPromise,
     categoriesPromise,
     bannerPromise,
+    promoTextPromise,
     topStaffPromise,
   ]);
 
@@ -50,7 +52,7 @@ export default async function MobileHomePage() {
   }
 
   const promoBanner = bannerSetting?.value || null;
-
+  const promoText = promoTextSetting?.value || '';
 
   const staffWithRating = topStaff.map((s) => {
     const reviews = s.appointments.map((a) => a.review).filter(Boolean);
@@ -75,6 +77,7 @@ export default async function MobileHomePage() {
       userName={userName}
       isAdmin={isAdmin}
       promoBanner={promoBanner}
+      promoText={promoText}
       categories={categoryData}
       staffWithRating={staffWithRating}
     />
