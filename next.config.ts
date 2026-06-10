@@ -13,10 +13,8 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   // Tối ưu bundle: chỉ import phần cần thiết của react-icons
-  modularizeImports: {
-    'react-icons/fi': {
-      transform: 'react-icons/fi/{{member}}',
-    },
+  experimental: {
+    optimizePackageImports: ['react-icons'],
   },
   async headers() {
     return [

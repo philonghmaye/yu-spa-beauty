@@ -31,23 +31,15 @@ export default async function MobileHomePage() {
     select: { value: true },
   });
 
-  // Query staff nhẹ hơn: chỉ lấy reviews thay vì tất cả appointments
+  // Query staff nhẹ hơn: chỉ lấy thông tin cơ bản
   const topStaffPromise = prisma.employee.findMany({
     where: { isAvailable: true, user: { isActive: true } },
     select: {
       id: true,
       user: { select: { name: true, avatar: true } },
       images: { orderBy: { sortOrder: 'asc' }, take: 1, select: { url: true } },
-      _count: { select: { appointments: { where: { status: 'COMPLETED', review: { isNot: null } } } } },
     },
     take: 5,
-  });
-
-  // Query riêng rating trung bình cho staff (nhẹ hơn nhiều so với load toàn bộ appointments)
-  const staffRatingsPromise = prisma.review.groupBy({
-    by: ['customerId'],
-    _avg: { rating: true },
-    _count: { rating: true },
   });
 
   // Thực thi song song tất cả các truy vấn DB

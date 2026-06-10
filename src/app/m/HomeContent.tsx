@@ -117,7 +117,7 @@ export default function HomeContent({ userName, isAdmin, promoBanner, promoText,
                   border: '3px solid var(--primary-50)',
                 }}>
                   {(s.images[0]?.url || s.user.avatar) ? (
-                    <Image src={s.images[0]?.url || s.user.avatar || ''} alt={s.user.name} width={90} height={90} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={s.images[0]?.url || s.user.avatar || ''} alt={s.user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <span style={{ fontSize: '1.5rem', color: 'var(--primary)' }}>{s.user.name.charAt(0)}</span>
                   )}
