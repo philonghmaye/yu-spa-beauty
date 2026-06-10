@@ -1,4 +1,5 @@
-export const dynamic = 'force-dynamic';
+// ISR: cache trang dịch vụ, revalidate mỗi 2 phút
+export const revalidate = 120;
 
 import prisma from '@/lib/prisma';
 import ServiceCatalogContent from './ServiceCatalogContent';

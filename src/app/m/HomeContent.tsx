@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { FiMessageCircle, FiArrowRight, FiStar, FiSettings } from 'react-icons/fi';
 import PromoBanner from './PromoBanner';
 import { useLang, LangSwitcher } from './LangContext';
@@ -67,7 +68,7 @@ export default function HomeContent({ userName, isAdmin, promoBanner, promoText,
             borderRadius: 'var(--radius-lg)', overflow: 'hidden',
             position: 'relative', height: 220, marginBottom: 14,
           }}>
-            <img src="/uploads/banner-beauty.png" alt={t.beautyServices} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <Image src="/uploads/banner-beauty.png" alt={t.beautyServices} width={828} height={440} priority style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '70%', background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)' }} />
             <div style={{ position: 'absolute', bottom: 0, left: 0, padding: '20px 24px', zIndex: 1 }}>
               <h2 style={{ color: '#fff', fontSize: '1.35rem', marginBottom: 4, lineHeight: 1.3, textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
@@ -116,7 +117,7 @@ export default function HomeContent({ userName, isAdmin, promoBanner, promoText,
                   border: '3px solid var(--primary-50)',
                 }}>
                   {(s.images[0]?.url || s.user.avatar) ? (
-                    <img src={s.images[0]?.url || s.user.avatar || ''} alt={s.user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <Image src={s.images[0]?.url || s.user.avatar || ''} alt={s.user.name} width={90} height={90} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <span style={{ fontSize: '1.5rem', color: 'var(--primary)' }}>{s.user.name.charAt(0)}</span>
                   )}
