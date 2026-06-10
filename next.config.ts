@@ -47,6 +47,13 @@ const nextConfig: NextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=604800, immutable' },
         ],
       },
+      // Cache API responses cho mobile — giảm tải DB
+      {
+        source: '/api/m/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=120, stale-while-revalidate=300' },
+        ],
+      },
     ];
   },
 };

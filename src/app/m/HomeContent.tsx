@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -20,25 +20,146 @@ interface CategoryData {
   id: string; name: string; slug: string; icon: string | null;
 }
 
-interface Props {
-  userName: string;
-  isAdmin: boolean;
+interface HomeData {
+  categories: CategoryData[];
   promoBanner: string | null;
   promoText: string;
-  categories: CategoryData[];
   staffWithRating: StaffData[];
 }
 
-export default function HomeContent({ userName, isAdmin, promoBanner, promoText, categories, staffWithRating }: Props) {
+interface UserData {
+  name: string;
+  isAdmin: boolean;
+}
+
+const CACHE_KEY = 'home_cache';
+const CACHE_TTL = 120000; // 2 phút
+
+export default function HomeContent() {
   const { t, tn } = useLang();
   const router = useRouter();
 
-  // Prefetch các trang user hay vào nhất — load trước khi họ tap
+  const [homeData, setHomeData] = useState<HomeData | null>(null);
+  const [userData, setUserData] = useState<UserData>({ name: '', isAdmin: false });
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch home data với sessionStorage cache
+  const fetchHomeData = useCallback(async () => {
+    // Check cache trước
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        if (Date.now() - ts < CACHE_TTL) {
+          setHomeData(data);
+          setIsLoading(false);
+          // Vẫn fetch mới trong background (stale-while-revalidate pattern)
+          fetch('/api/m/home')
+            .then(r => r.json())
+            .then(freshData => {
+              setHomeData(freshData);
+              sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: freshData, ts: Date.now() }));
+            })
+            .catch(() => {});
+          return;
+        }
+      }
+    } catch {}
+
+    // Fetch mới
+    try {
+      const res = await fetch('/api/m/home');
+      const data = await res.json();
+      setHomeData(data);
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+    } catch {
+      // Nếu lỗi, dùng cache cũ nếu có
+      try {
+        const cached = sessionStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const { data } = JSON.parse(cached);
+          setHomeData(data);
+        }
+      } catch {}
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Fetch song song: home data + user data
+    fetchHomeData();
+    fetch('/api/m/me')
+      .then(r => r.json())
+      .then(data => setUserData(data))
+      .catch(() => {});
+  }, [fetchHomeData]);
+
+  // Prefetch các trang user hay vào nhất
   useEffect(() => {
     router.prefetch('/m/dich-vu');
     router.prefetch('/m/kham-pha');
     router.prefetch('/m/hoat-dong');
   }, [router]);
+
+  // Skeleton loading state
+  if (isLoading || !homeData) {
+    return (
+      <>
+        {/* Header skeleton */}
+        <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--white)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="skeleton" style={{ width: 42, height: 42, borderRadius: '50%' }} />
+            <div>
+              <div className="skeleton" style={{ width: 120, height: 14, borderRadius: 6, marginBottom: 6 }} />
+              <div className="skeleton" style={{ width: 160, height: 16, borderRadius: 6 }} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <div className="skeleton" style={{ width: 36, height: 36, borderRadius: '50%' }} />
+            <div className="skeleton" style={{ width: 36, height: 36, borderRadius: '50%' }} />
+          </div>
+        </div>
+
+        {/* Banner skeleton */}
+        <div style={{ margin: '0 16px 16px' }}>
+          <div className="skeleton" style={{ height: 100, borderRadius: 16 }} />
+        </div>
+
+        {/* Hero skeleton */}
+        <div style={{ padding: '0 16px' }}>
+          <div className="skeleton" style={{ height: 220, borderRadius: 16, marginBottom: 14 }} />
+        </div>
+
+        {/* Category chips skeleton */}
+        <div style={{ padding: '20px 16px 8px' }}>
+          <div className="skeleton" style={{ width: 140, height: 18, borderRadius: 6, marginBottom: 12 }} />
+          <div style={{ display: 'flex', gap: 8 }}>
+            {[80, 100, 70, 90, 60].map((w, i) => (
+              <div key={i} className="skeleton" style={{ width: w, height: 32, borderRadius: 20, flexShrink: 0 }} />
+            ))}
+          </div>
+        </div>
+
+        {/* Staff skeleton */}
+        <div style={{ padding: '16px' }}>
+          <div className="skeleton" style={{ width: 180, height: 18, borderRadius: 6, marginBottom: 14 }} />
+          <div style={{ display: 'flex', gap: 12 }}>
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} style={{ width: 130, textAlign: 'center', flexShrink: 0 }}>
+                <div className="skeleton" style={{ width: 90, height: 90, borderRadius: '50%', margin: '0 auto 8px' }} />
+                <div className="skeleton" style={{ width: 80, height: 12, borderRadius: 6, margin: '0 auto 4px' }} />
+                <div className="skeleton" style={{ width: 60, height: 10, borderRadius: 6, margin: '0 auto' }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  const { categories, promoBanner, promoText, staffWithRating } = homeData;
+  const { name: userName, isAdmin } = userData;
 
   return (
     <>
@@ -127,7 +248,14 @@ export default function HomeContent({ userName, isAdmin, promoBanner, promoText,
                   border: '3px solid var(--primary-50)',
                 }}>
                   {(s.images[0]?.url || s.user.avatar) ? (
-                    <img src={s.images[0]?.url || s.user.avatar || ''} alt={s.user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img
+                      src={s.images[0]?.url || s.user.avatar || ''}
+                      alt={s.user.name}
+                      loading="lazy"
+                      width={90}
+                      height={90}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
                   ) : (
                     <span style={{ fontSize: '1.5rem', color: 'var(--primary)' }}>{s.user.name.charAt(0)}</span>
                   )}
