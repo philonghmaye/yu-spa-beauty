@@ -28,6 +28,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="YURI SPA" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        
+        {/* Preconnect & DNS prefetch — giảm latency trên mobile */}
+        <link rel="dns-prefetch" href="https://ep-crimson-snow-aocylxna.c-2.ap-southeast-1.aws.neon.tech" />
+        <link rel="preconnect" href="https://vercel.live" crossOrigin="anonymous" />
 
         {/* Open Graph for Facebook/Zalo */}
         <meta property="og:type" content="website" />

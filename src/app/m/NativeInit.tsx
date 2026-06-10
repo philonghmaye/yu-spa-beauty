@@ -28,6 +28,11 @@ export default function NativeInit() {
       window.addEventListener('online', handleOnline);
       window.addEventListener('offline', handleOffline);
 
+      // Đăng ký Service Worker để cache assets trên điện thoại
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      }
+
       return () => {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);

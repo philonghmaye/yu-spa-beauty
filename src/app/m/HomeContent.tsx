@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { FiMessageCircle, FiArrowRight, FiStar, FiSettings } from 'react-icons/fi';
 import PromoBanner from './PromoBanner';
 import { useLang, LangSwitcher } from './LangContext';
@@ -29,6 +31,14 @@ interface Props {
 
 export default function HomeContent({ userName, isAdmin, promoBanner, promoText, categories, staffWithRating }: Props) {
   const { t, tn } = useLang();
+  const router = useRouter();
+
+  // Prefetch các trang user hay vào nhất — load trước khi họ tap
+  useEffect(() => {
+    router.prefetch('/m/dich-vu');
+    router.prefetch('/m/kham-pha');
+    router.prefetch('/m/hoat-dong');
+  }, [router]);
 
   return (
     <>
