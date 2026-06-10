@@ -23,15 +23,11 @@ function formatCurrency(n: number) {
   return new Intl.NumberFormat('vi-VN').format(n) + ' đ';
 }
 
-export default function MobileBookingForm({
-  userId, userInfo,
-}: {
-  userId?: string;
-  userInfo?: { name: string; phone: string; email: string };
-}) {
+export default function MobileBookingForm() {
   const router = useRouter();
   const { t, tn, lang } = useLang();
   const [booking, setBooking] = useState<BookingData | null>(null);
+  const [userId, setUserId] = useState<string | undefined>();
   const [promoCode, setPromoCode] = useState('');
   const [promoResult, setPromoResult] = useState<{ valid: boolean; discountAmount?: number; error?: string } | null>(null);
   const [promoLoading, setPromoLoading] = useState(false);
@@ -39,17 +35,32 @@ export default function MobileBookingForm({
   const [selectedTime, setSelectedTime] = useState('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
-  const [customerName, setCustomerName] = useState(userInfo?.name || '');
-  const [customerPhone, setCustomerPhone] = useState(userInfo?.phone || '');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    // Load booking data from session
     const data = sessionStorage.getItem('mobileBooking');
     if (data) {
       setBooking(JSON.parse(data));
     } else {
       router.push('/m');
     }
+
+    // Fetch user info từ API (non-blocking)
+    fetch('/api/m/me')
+      .then(r => r.json())
+      .then(userData => {
+        if (userData.name) {
+          setCustomerName(prev => prev || userData.name);
+          setUserId(userData.id);
+        }
+        if (userData.phone) setCustomerPhone(prev => prev || userData.phone);
+        if (userData.email) setCustomerEmail(userData.email);
+      })
+      .catch(() => {});
   }, [router]);
 
   const fetchSlots = useCallback(async () => {
@@ -96,7 +107,7 @@ export default function MobileBookingForm({
         startTime: selectedTime,
         customerName,
         customerPhone,
-        customerEmail: userInfo?.email,
+        customerEmail: customerEmail || undefined,
         promoCode: promoResult?.valid ? promoCode.trim() : undefined,
         userId,
       });
