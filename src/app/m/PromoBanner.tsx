@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import NextImage from 'next/image';
 import { FiCamera, FiX, FiEdit2, FiCheck } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useLang } from './LangContext';
@@ -123,10 +124,12 @@ export default function PromoBanner({ isAdmin, initialBanner, initialPromoText }
           borderRadius: 16, overflow: 'hidden',
           boxShadow: '0 2px 12px rgba(124,58,237,0.12)',
         }}>
-          <img
+          <NextImage
             src={bannerUrl}
             alt="Ưu đãi đặc biệt"
-            style={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }}
+            fill
+            sizes="(max-width: 480px) 100vw, 480px"
+            style={{ objectFit: 'cover' }}
           />
         </div>
 

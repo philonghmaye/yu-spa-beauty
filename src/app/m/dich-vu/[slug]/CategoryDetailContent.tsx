@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { FiArrowLeft, FiTag, FiShare2 } from 'react-icons/fi';
 import CategoryServiceList from './CategoryServiceList';
 import { useLang } from '../../LangContext';
@@ -39,11 +40,11 @@ export default function CategoryDetailContent({ category, heroImage, services }:
 
       {/* Category Hero */}
       <div className="m-catdetail-hero">
-        <img src={heroImage} alt={tn(category.name)} className="m-catdetail-hero-img" />
+        <Image src={heroImage} alt={tn(category.name)} className="m-catdetail-hero-img" fill sizes="(max-width: 480px) 100vw, 480px" priority />
         <div className="m-catdetail-hero-overlay" />
         <div className="m-catdetail-hero-content">
           <div className="m-catdetail-hero-badge">
-            <img src={heroImage} alt={tn(category.name)} className="m-catdetail-badge-img" />
+            <Image src={heroImage} alt={tn(category.name)} className="m-catdetail-badge-img" width={64} height={64} style={{ objectFit: 'cover' }} />
           </div>
           <h1 className="m-catdetail-hero-title">{tn(category.name)}</h1>
           {category.description && (

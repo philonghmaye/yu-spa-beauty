@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { FiBell, FiX, FiClock } from 'react-icons/fi';
 
 interface NotificationItem {
@@ -22,7 +22,7 @@ export default function AdminNotificationBell() {
   const [count, setCount] = useState(0);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showPanel, setShowPanel] = useState(false);
-  const [prevCount, setPrevCount] = useState(0);
+  const prevCountRef = useRef(0);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -33,19 +33,23 @@ export default function AdminNotificationBell() {
       setNotifications(data.notifications || []);
 
       // Play sound and vibrate when new notification arrives
-      if (data.count > prevCount && prevCount >= 0) {
-        // Vibrate if supported
+      if (data.count > prevCountRef.current && prevCountRef.current >= 0) {
         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       }
-      setPrevCount(data.count || 0);
+      prevCountRef.current = data.count || 0;
     } catch {
       // silently fail
     }
-  }, [prevCount]);
+  }, []);
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 15000); // Poll every 15s
+    const interval = setInterval(() => {
+      // Only poll when tab is visible (save bandwidth on mobile)
+      if (document.visibilityState === 'visible') {
+        fetchNotifications();
+      }
+    }, 30000); // Poll every 30s instead of 15s
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 

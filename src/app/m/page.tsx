@@ -5,48 +5,47 @@ import HomeContent from './HomeContent';
 export default async function MobileHomePage() {
   const session = await auth();
 
-  // Get user info if logged in
-  let userName = '';
-  let isAdmin = false;
-  if (session?.user?.id) {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { name: true, avatar: true, role: true },
-    });
-    if (user) {
-      userName = user.name;
-      isAdmin = user.role === 'ADMIN';
-    }
-  }
+  // Run all DB queries in parallel for faster page load
+  const [user, categories, settings, topStaff] = await Promise.all([
+    // Get user info if logged in
+    session?.user?.id
+      ? prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { name: true, avatar: true, role: true },
+        })
+      : null,
 
-  // Get service categories for cards
-  const categories = await prisma.category.findMany({
-    where: { isActive: true },
-    include: { services: { where: { isActive: true }, take: 1 } },
-    orderBy: { sortOrder: 'asc' },
-  });
+    // Get service categories for cards
+    prisma.category.findMany({
+      where: { isActive: true },
+      include: { services: { where: { isActive: true }, take: 1 } },
+      orderBy: { sortOrder: 'asc' },
+    }),
 
-  // Get promo banner setting
-  const bannerSetting = await prisma.setting.findUnique({ where: { key: 'promo_banner' } });
-  const promoBanner = bannerSetting?.value || null;
+    // Get promo settings in one query (banner + text)
+    prisma.setting.findMany({
+      where: { key: { in: ['promo_banner', 'promo_text'] } },
+    }),
 
-  // Get promo text setting
-  const promoTextSetting = await prisma.setting.findUnique({ where: { key: 'promo_text' } });
-  const promoText = promoTextSetting?.value || '';
-
-  // Get top staff for quick preview
-  const topStaff = await prisma.employee.findMany({
-    where: { isAvailable: true, user: { isActive: true } },
-    include: {
-      user: { select: { name: true, avatar: true } },
-      images: { orderBy: { sortOrder: 'asc' }, take: 1 },
-      appointments: {
-        where: { status: 'COMPLETED' },
-        select: { review: { select: { rating: true } } },
+    // Get top staff for quick preview
+    prisma.employee.findMany({
+      where: { isAvailable: true, user: { isActive: true } },
+      include: {
+        user: { select: { name: true, avatar: true } },
+        images: { orderBy: { sortOrder: 'asc' }, take: 1 },
+        appointments: {
+          where: { status: 'COMPLETED' },
+          select: { review: { select: { rating: true } } },
+        },
       },
-    },
-    take: 5,
-  });
+      take: 5,
+    }),
+  ]);
+
+  const userName = user?.name || '';
+  const isAdmin = user?.role === 'ADMIN';
+  const promoBanner = settings.find(s => s.key === 'promo_banner')?.value || null;
+  const promoText = settings.find(s => s.key === 'promo_text')?.value || '';
 
   const staffWithRating = topStaff.map((s) => {
     const reviews = s.appointments.map((a) => a.review).filter(Boolean);

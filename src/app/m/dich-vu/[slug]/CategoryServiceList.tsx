@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FiClock, FiSearch } from 'react-icons/fi';
 import { formatCurrency } from '@/lib/utils';
 import { useLang } from '../../LangContext';
@@ -59,7 +60,7 @@ export default function CategoryServiceList({ services, categorySlug }: { servic
           >
             {service.image && (
               <div className="m-catdetail-service-img-wrap">
-                <img src={service.image} alt={service.name} className="m-catdetail-service-img" />
+                <Image src={service.image} alt={service.name} className="m-catdetail-service-img" fill sizes="(max-width: 480px) 100vw, 480px" />
                 {hasDiscount && (
                   <div className="m-catdetail-discount-badge">
                     -{Math.round(((service.price - service.discountPrice!) / service.price) * 100)}%

@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
+    deviceSizes: [320, 420, 480, 640, 750],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    minimumCacheTTL: 86400, // Cache images for 24 hours
   },
   compress: true,
   poweredByHeader: false,

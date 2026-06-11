@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { FiArrowLeft, FiChevronRight } from 'react-icons/fi';
 import { useLang } from '../LangContext';
 
@@ -31,7 +32,7 @@ export default function ServiceCatalogContent({ categories }: { categories: Cate
             style={{ animationDelay: `${index * 0.08}s` }}
           >
             <div className="m-catalog-card-header">
-              <img src={cat.image} alt={tn(cat.name)} className="m-catalog-card-img" />
+              <Image src={cat.image} alt={tn(cat.name)} className="m-catalog-card-img" fill sizes="(max-width: 480px) 50vw, 240px" />
               <div className="m-catalog-card-overlay" />
             </div>
             <div className="m-catalog-card-body">

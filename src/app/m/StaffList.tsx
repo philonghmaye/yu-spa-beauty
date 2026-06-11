@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FiSearch, FiStar, FiMapPin, FiArrowLeft } from 'react-icons/fi';
 import { useLang } from './LangContext';
 
@@ -108,7 +109,7 @@ export default function StaffList({
             <div className="m-staff-card">
               <div className="m-staff-img-wrap">
                 {staff.avatar ? (
-                  <img src={staff.avatar} alt={staff.name} className="m-staff-img" />
+                  <Image src={staff.avatar} alt={staff.name} className="m-staff-img" width={100} height={120} />
                 ) : (
                   <div className="m-staff-img" style={{ background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: 'var(--primary)' }}>
                     {staff.name.charAt(0)}
@@ -139,7 +140,7 @@ export default function StaffList({
             <div className="m-staff-card">
               <div className="m-staff-img-wrap">
                 {staff.avatar ? (
-                  <img src={staff.avatar} alt={staff.name} className="m-staff-img" />
+                  <Image src={staff.avatar} alt={staff.name} className="m-staff-img" width={100} height={120} />
                 ) : (
                   <div className="m-staff-img" style={{ background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: 'var(--primary)' }}>
                     {staff.name.charAt(0)}
