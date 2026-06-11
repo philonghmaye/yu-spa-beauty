@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FiCheck } from 'react-icons/fi';
-import { hapticSuccess, scheduleAppointmentReminder } from '@/lib/native';
+import { hapticSuccess, scheduleAppointmentReminder, requestAppReview } from '@/lib/native';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('vi-VN').format(n) + ' đ';
@@ -34,6 +34,9 @@ export default function BookingResultPage() {
           scheduledDate
         ).catch(err => console.error('Failed to schedule local notification:', err));
       }
+
+      // Request App Store review after 3s delay (native only)
+      setTimeout(() => requestAppReview(), 3000);
     }
   }, []);
 

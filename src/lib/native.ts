@@ -200,6 +200,31 @@ export async function hideSplash() {
   await SplashScreen.hide();
 }
 
+// ==================== IN-APP REVIEW ====================
+/**
+ * Request App Store review — Apple Guideline 4.2
+ * Only triggers after successful booking, max once per session
+ */
+export async function requestAppReview() {
+  // Only prompt once per session
+  const key = 'review_prompted';
+  if (sessionStorage.getItem(key)) return;
+
+  // Only prompt on native platform
+  if (!isNative()) return;
+
+  try {
+    // Dynamic import — package only available in native iOS build
+    // @ts-ignore - installed via Capacitor plugin in iOS project
+    const mod = await import('@nicepkg/capacitor-in-app-review');
+    await mod.InAppReview.requestReview();
+    sessionStorage.setItem(key, '1');
+  } catch {
+    // Silently fail — review prompt is optional
+    console.log('In-App Review not available');
+  }
+}
+
 // ==================== UTILITIES ====================
 function hashCode(str: string): number {
   let hash = 0;

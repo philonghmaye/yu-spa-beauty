@@ -2,8 +2,9 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import Link from 'next/link';
-import { FiClock, FiUser, FiInfo, FiLogOut, FiChevronRight } from 'react-icons/fi';
+import { FiClock, FiUser, FiInfo, FiLogOut, FiChevronRight, FiShield, FiFileText, FiTrash2 } from 'react-icons/fi';
 import LogoutButton from '@/components/LogoutButton';
+import DeleteAccountButton from './DeleteAccountButton';
 
 export default async function MobileAccountPage() {
   const session = await auth();
@@ -73,10 +74,25 @@ export default async function MobileAccountPage() {
           Về chúng tôi
           <span className="arrow"><FiChevronRight /></span>
         </Link>
+        <Link href="/privacy-policy" className="m-menu-item">
+          <span className="icon"><FiShield /></span>
+          Chính sách bảo mật
+          <span className="arrow"><FiChevronRight /></span>
+        </Link>
+        <Link href="/privacy-policy#terms" className="m-menu-item">
+          <span className="icon"><FiFileText /></span>
+          Điều khoản sử dụng
+          <span className="arrow"><FiChevronRight /></span>
+        </Link>
         <div className="m-menu-item danger" style={{ cursor: 'pointer' }}>
           <span className="icon"><FiLogOut /></span>
           <LogoutButton />
         </div>
+      </div>
+
+      {/* Delete Account */}
+      <div style={{ padding: '24px 16px 40px' }}>
+        <DeleteAccountButton />
       </div>
     </>
   );
