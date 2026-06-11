@@ -97,3 +97,31 @@ export async function createReview(data: {
 
   return review;
 }
+
+export async function deleteAccountAction() {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error('Chưa đăng nhập');
+
+  const userId = session.user.id;
+
+  const customer = await prisma.customer.findUnique({
+    where: { userId },
+  });
+
+  if (customer) {
+    await prisma.$transaction([
+      prisma.review.deleteMany({ where: { customerId: customer.id } }),
+      prisma.payment.deleteMany({ where: { appointment: { customerId: customer.id } } }),
+      prisma.notification.deleteMany({ where: { appointment: { customerId: customer.id } } }),
+      prisma.appointmentService.deleteMany({ where: { appointment: { customerId: customer.id } } }),
+      prisma.appointment.deleteMany({ where: { customerId: customer.id } }),
+      prisma.user.delete({ where: { id: userId } }),
+    ]);
+  } else {
+    // Nếu là admin hoặc nhân viên không có record customer
+    await prisma.user.delete({ where: { id: userId } });
+  }
+
+  return { success: true };
+}
+

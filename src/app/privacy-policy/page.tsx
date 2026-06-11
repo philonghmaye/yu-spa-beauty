@@ -56,7 +56,11 @@ export default function PrivacyPolicyPage() {
       <p>Ứng dụng sử dụng thông báo đẩy để nhắc lịch hẹn. Bạn có thể tắt thông báo bất kỳ lúc nào trong Cài đặt của thiết bị.</p>
 
       <h2 style={{ fontSize: '1.2rem', marginTop: 28, marginBottom: 8 }}>7. Xóa tài khoản</h2>
-      <p>Bạn có thể yêu cầu xóa tài khoản và toàn bộ dữ liệu bằng cách liên hệ:</p>
+      <p>Bạn có thể chủ động xóa tài khoản trực tiếp ngay trong ứng dụng bằng cách:</p>
+      <ul style={{ paddingLeft: 20 }}>
+        <li>Mở ứng dụng, vào mục <strong>Tài khoản</strong> (Account) &rarr; chọn <strong>Thông tin cá nhân</strong> (Profile) &rarr; nhấn nút <strong>Xóa tài khoản vĩnh viễn</strong> ở cuối trang. Hệ thống sẽ ngay lập tức xóa bỏ toàn bộ dữ liệu cá nhân của bạn.</li>
+      </ul>
+      <p>Hoặc bạn có thể gửi yêu cầu hỗ trợ xóa tài khoản qua các kênh liên hệ:</p>
       <ul style={{ paddingLeft: 20 }}>
         <li>Email: <a href="mailto:support@yurispa.com">support@yurispa.com</a></li>
         <li>Điện thoại: <a href="tel:0123456789">0123 456 789</a></li>
