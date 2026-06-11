@@ -35,6 +35,15 @@ function getCategoryImage(slug: string, dbImage: string | null): string {
   return categoryImages[slug] || '/images/cat-default.png';
 }
 
+// Pre-render all active category pages at build time → instant load
+export async function generateStaticParams() {
+  const categories = await prisma.category.findMany({
+    where: { isActive: true },
+    select: { slug: true },
+  });
+  return categories.map((c) => ({ slug: c.slug }));
+}
+
 export default async function CategoryDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
@@ -44,6 +53,15 @@ export default async function CategoryDetailPage({ params }: { params: Promise<{
       services: {
         where: { isActive: true },
         orderBy: { sortOrder: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          price: true,
+          discountPrice: true,
+          duration: true,
+          image: true,
+        },
       },
     },
   });
