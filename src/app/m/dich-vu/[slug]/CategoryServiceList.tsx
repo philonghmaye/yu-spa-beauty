@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FiClock, FiSearch } from 'react-icons/fi';
+import { FiClock, FiSearch, FiChevronDown } from 'react-icons/fi';
 import { formatCurrency } from '@/lib/utils';
 import { useLang } from '../../LangContext';
 
@@ -17,9 +17,12 @@ interface Service {
   image: string | null;
 }
 
+const PAGE_SIZE = 10;
+
 export default function CategoryServiceList({ services, categorySlug }: { services: Service[]; categorySlug: string }) {
   const { t, tn } = useLang();
   const [search, setSearch] = useState('');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return services;
@@ -27,10 +30,17 @@ export default function CategoryServiceList({ services, categorySlug }: { servic
     return services.filter(s => s.name.toLowerCase().includes(q));
   }, [services, search]);
 
+  // Reset visible count when search changes
+  const displayedServices = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
+
   return (
     <div className="m-catdetail-list">
       <div className="m-catdetail-list-header">
         <h2>{t.servicesCatalog}</h2>
+        <span style={{ fontSize: '0.8rem', color: 'var(--neutral-400)' }}>
+          {filtered.length} {t.serviceCount}
+        </span>
       </div>
 
       {/* Search */}
@@ -39,7 +49,7 @@ export default function CategoryServiceList({ services, categorySlug }: { servic
         <input
           type="text"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => { setSearch(e.target.value); setVisibleCount(PAGE_SIZE); }}
           placeholder={t.searchService}
           style={{
             width: '100%', padding: '10px 14px 10px 36px', borderRadius: 'var(--radius-full)',
@@ -49,14 +59,13 @@ export default function CategoryServiceList({ services, categorySlug }: { servic
         />
       </div>
 
-      {filtered.map((service, index) => {
+      {displayedServices.map((service) => {
         const hasDiscount = service.discountPrice && service.discountPrice < service.price;
 
         return (
           <div
             key={service.id}
             className="m-catdetail-service"
-            style={{ animationDelay: `${index * 0.06}s` }}
           >
             {service.image && (
               <div className="m-catdetail-service-img-wrap">
@@ -114,6 +123,24 @@ export default function CategoryServiceList({ services, categorySlug }: { servic
           </div>
         );
       })}
+
+      {/* Load More Button */}
+      {hasMore && (
+        <div style={{ padding: '12px 16px 20px', textAlign: 'center' }}>
+          <button
+            onClick={() => setVisibleCount(prev => prev + PAGE_SIZE)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '10px 24px', borderRadius: 'var(--radius-full)',
+              border: '1.5px solid var(--primary)', background: 'var(--primary-50)',
+              color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit',
+            }}
+          >
+            Xem thêm ({filtered.length - visibleCount} còn lại) <FiChevronDown />
+          </button>
+        </div>
+      )}
 
       {filtered.length === 0 && search.trim() && (
         <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--neutral-400)', fontSize: '0.88rem' }}>
