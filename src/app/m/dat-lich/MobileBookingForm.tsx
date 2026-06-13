@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FiArrowLeft, FiX, FiClock, FiStar, FiLoader } from 'react-icons/fi';
@@ -39,14 +39,28 @@ export default function MobileBookingForm() {
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const initDone = React.useRef(false);
 
   useEffect(() => {
+    // Chỉ chạy 1 lần duy nhất
+    if (initDone.current) return;
+    initDone.current = true;
+
     // Load booking data from session
     const data = sessionStorage.getItem('mobileBooking');
     if (data) {
       setBooking(JSON.parse(data));
     } else {
-      router.push('/m');
+      // Đợi 500ms rồi mới redirect — tránh redirect sớm khi sessionStorage chưa sẵn sàng
+      setTimeout(() => {
+        const retryData = sessionStorage.getItem('mobileBooking');
+        if (!retryData) {
+          window.location.href = '/m';
+        } else {
+          setBooking(JSON.parse(retryData));
+        }
+      }, 500);
+      return;
     }
 
     // Fetch user info từ API (non-blocking)
@@ -61,7 +75,8 @@ export default function MobileBookingForm() {
         if (userData.email) setCustomerEmail(userData.email);
       })
       .catch(() => {});
-  }, [router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchSlots = useCallback(async () => {
     if (!selectedDate || !booking) return;
