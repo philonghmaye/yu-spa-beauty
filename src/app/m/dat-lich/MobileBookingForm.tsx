@@ -136,16 +136,14 @@ export default function MobileBookingForm() {
       </div>
 
       <div style={{ paddingBottom: 90 }}>
-        {/* Customer Info (show if name or phone missing) */}
-        {(!customerName || !customerPhone) && (
-          <div className="m-booking-section">
-            <div className="m-booking-section-title">{lang === 'en' ? 'Your Information' : 'Thông tin của bạn'}</div>
-            <div style={{ marginBottom: 10 }}>
-              <input className="m-date-input" placeholder="Họ tên *" value={customerName} onChange={e => setCustomerName(e.target.value)} />
-            </div>
-            <input className="m-date-input" placeholder="Số điện thoại *" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} />
+        {/* Customer Info - luôn hiển thị để user xem/sửa */}
+        <div className="m-booking-section">
+          <div className="m-booking-section-title">{lang === 'en' ? 'Your Information' : 'Thông tin của bạn'}</div>
+          <div style={{ marginBottom: 10 }}>
+            <input className="m-date-input" placeholder="Họ tên *" value={customerName} onChange={e => setCustomerName(e.target.value)} />
           </div>
-        )}
+          <input className="m-date-input" placeholder="Số điện thoại *" type="tel" inputMode="tel" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} />
+        </div>
 
         {/* Selected Service */}
         <div className="m-booking-section">
