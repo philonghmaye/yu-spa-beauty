@@ -5,7 +5,8 @@ import { FiLogOut } from 'react-icons/fi';
 
 export default function LogoutButton() {
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/m' });
+    await signOut({ redirect: false });
+    window.location.href = '/m';
   };
 
   return (
