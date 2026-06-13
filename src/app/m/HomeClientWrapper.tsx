@@ -41,7 +41,16 @@ export default function HomeClientWrapper() {
               if (Date.now() - ts < 120000) {
                 setHomeData(data);
                 setLoading(false);
-                // Background refresh
+                // Fetch session ngay cả khi dùng cache (để biết isAdmin)
+                fetch('/api/auth/session').then(r => r.json()).then(sess => {
+                  if (sess?.user) {
+                    setSession({
+                      userName: sess.user.name || '',
+                      isAdmin: sess.user.role === 'ADMIN',
+                    });
+                  }
+                }).catch(() => {});
+                // Background refresh home data
                 fetch('/api/m/home').then(r => r.json()).then(freshData => {
                   setHomeData(freshData);
                   sessionStorage.setItem(cacheKey, JSON.stringify({ data: freshData, ts: Date.now() }));
