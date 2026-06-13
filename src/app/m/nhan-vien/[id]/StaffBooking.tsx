@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiChevronRight, FiSearch } from 'react-icons/fi';
 import { useLang } from '../../LangContext';
@@ -51,6 +51,12 @@ export default function StaffBooking({
 }) {
   const router = useRouter();
   const { t, tn } = useLang();
+
+  // Prefetch booking page + user data ngay khi render
+  useEffect(() => {
+    router.prefetch('/m/dat-lich');
+    fetch('/api/m/me').catch(() => {});
+  }, [router]);
   // Group services by category
   const grouped = services.reduce((acc, s) => {
     if (!acc[s.category]) acc[s.category] = [];

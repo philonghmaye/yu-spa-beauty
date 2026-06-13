@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   // Trỏ tới URL Vercel khi chạy trên iOS
   // Thay URL bên dưới bằng domain Vercel thật của bạn
   server: {
-    url: 'https://yu-spa-beauty.vercel.app/m',
+    url: 'https://yuri-spa-beauty.vercel.app/m',
     cleartext: false,
   },
   plugins: {
@@ -17,18 +17,18 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,
-      backgroundColor: '#7c3aed',
+      backgroundColor: '#FFFDF7',
       showSpinner: true,
-      spinnerColor: '#ffffff',
+      spinnerColor: '#C44569',
       androidSpinnerStyle: 'small',
     },
     StatusBar: {
-      style: 'dark',
-      backgroundColor: '#7c3aed',
+      style: 'light',
+      backgroundColor: '#FFFDF7',
     },
     LocalNotifications: {
       smallIcon: 'ic_stat_icon',
-      iconColor: '#7c3aed',
+      iconColor: '#C44569',
     },
   },
   ios: {

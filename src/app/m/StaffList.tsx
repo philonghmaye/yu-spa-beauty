@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -37,6 +37,13 @@ export default function StaffList({
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { t, tn } = useLang();
+
+  // Prefetch booking page + user data ngay khi render để giảm thời gian chờ
+  useEffect(() => {
+    router.prefetch('/m/dat-lich');
+    // Pre-warm API /api/m/me để cache sẵn
+    fetch('/api/m/me').catch(() => {});
+  }, [router]);
 
   // Filter staff: if serviceFilter is set, only show staff who have that service
   const staffPool = serviceFilter
