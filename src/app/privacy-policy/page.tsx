@@ -1,11 +1,25 @@
-export const metadata = {
-  title: 'Chính sách quyền riêng tư — YURI SPA BEAUTY',
-  description: 'Chính sách bảo mật và quyền riêng tư của Yuri Spa Beauty',
-};
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { FiArrowLeft } from 'react-icons/fi';
 
 export default function PrivacyPolicyPage() {
+  const router = useRouter();
+
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 20px', fontFamily: 'system-ui, sans-serif', lineHeight: 1.7 }}>
+      <button
+        onClick={() => router.back()}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: '0.9rem', color: 'var(--primary, #7c3aed)',
+          fontWeight: 600, padding: '8px 0', marginBottom: 16,
+          fontFamily: 'inherit',
+        }}
+      >
+        <FiArrowLeft /> Quay lại
+      </button>
       <h1 style={{ fontSize: '1.6rem', marginBottom: 8 }}>Chính sách quyền riêng tư</h1>
       <p style={{ color: '#666', marginBottom: 24 }}>Cập nhật lần cuối: 01/06/2026</p>
 
