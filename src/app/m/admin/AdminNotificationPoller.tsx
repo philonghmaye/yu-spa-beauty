@@ -5,12 +5,27 @@ import { isNative } from '@/lib/native';
 
 /**
  * Polling component: kiểm tra booking mới mỗi 30 giây.
- * Khi có booking mới → hiện Local Notification trên iPhone (giống notification Zalo/Grab).
- * Không cần Apple Developer Account hay APNs.
+ * - Hiện Local Notification trên iPhone khi có booking mới
+ * - Cập nhật badge (số đỏ) trên icon app = tổng đơn chưa xác nhận
  */
 export default function AdminNotificationPoller() {
   const lastCountRef = useRef<number | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cập nhật badge trên icon app
+  const updateBadge = async (count: number) => {
+    if (!isNative()) return;
+    try {
+      const { Badge } = await import('@capawesome/capacitor-badge');
+      if (count > 0) {
+        await Badge.set({ count });
+      } else {
+        await Badge.clear();
+      }
+    } catch (e) {
+      console.error('Badge update failed:', e);
+    }
+  };
 
   useEffect(() => {
     const checkNewBookings = async () => {
@@ -21,13 +36,16 @@ export default function AdminNotificationPoller() {
         const data = await res.json();
         const currentCount = data.count || 0;
 
+        // Luôn cập nhật badge = tổng đơn chưa xác nhận
+        await updateBadge(currentCount);
+
         // Lần đầu: lưu count hiện tại, không thông báo
         if (lastCountRef.current === null) {
           lastCountRef.current = currentCount;
           return;
         }
 
-        // Nếu có booking MỚI (count tăng)
+        // Nếu có booking MỚI (count tăng) → hiện notification
         if (currentCount > lastCountRef.current && data.notifications?.length > 0) {
           const newest = data.notifications[0];
           const customerName = newest.appointment?.customerName || 'Khách hàng';
@@ -40,7 +58,6 @@ export default function AdminNotificationPoller() {
             try {
               const { LocalNotifications } = await import('@capacitor/local-notifications');
               
-              // Xin quyền nếu chưa có
               const perm = await LocalNotifications.requestPermissions();
               if (perm.display === 'granted') {
                 await LocalNotifications.schedule({
@@ -49,7 +66,7 @@ export default function AdminNotificationPoller() {
                       id: Date.now(),
                       title: '📅 Lịch hẹn mới!',
                       body: `${customerName} đặt ${services} lúc ${time} ngày ${date}`,
-                      schedule: { at: new Date(Date.now() + 1000) }, // 1 giây sau
+                      schedule: { at: new Date(Date.now() + 1000) },
                       sound: 'default',
                       smallIcon: 'ic_stat_icon',
                       extra: {
@@ -64,7 +81,7 @@ export default function AdminNotificationPoller() {
             }
           }
 
-          // Browser fallback: Web Notification API
+          // Browser fallback
           if (!isNative() && 'Notification' in window) {
             if (Notification.permission === 'granted') {
               new Notification('📅 Lịch hẹn mới!', {
