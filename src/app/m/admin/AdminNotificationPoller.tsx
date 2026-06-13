@@ -30,14 +30,21 @@ export default function AdminNotificationPoller() {
   useEffect(() => {
     const checkNewBookings = async () => {
       try {
-        const res = await fetch('/api/admin/notifications');
-        if (!res.ok) return;
+        // Lấy số đơn chờ xác nhận (PENDING) cho badge
+        const [pendingRes, notiRes] = await Promise.all([
+          fetch('/api/admin/pending-count'),
+          fetch('/api/admin/notifications'),
+        ]);
 
-        const data = await res.json();
+        // Cập nhật badge = số đơn chờ xác nhận
+        if (pendingRes.ok) {
+          const pendingData = await pendingRes.json();
+          await updateBadge(pendingData.count || 0);
+        }
+
+        if (!notiRes.ok) return;
+        const data = await notiRes.json();
         const currentCount = data.count || 0;
-
-        // Luôn cập nhật badge = tổng đơn chưa xác nhận
-        await updateBadge(currentCount);
 
         // Lần đầu: lưu count hiện tại, không thông báo
         if (lastCountRef.current === null) {

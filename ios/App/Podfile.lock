@@ -16,6 +16,8 @@ PODS:
     - Capacitor
   - CapacitorStatusBar (8.0.2):
     - Capacitor
+  - CapawesomeCapacitorBadge (8.0.2):
+    - Capacitor
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
@@ -27,6 +29,7 @@ DEPENDENCIES:
   - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
+  - "CapawesomeCapacitorBadge (from `../../node_modules/@capawesome/capacitor-badge`)"
 
 EXTERNAL SOURCES:
   Capacitor:
@@ -47,6 +50,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/splash-screen"
   CapacitorStatusBar:
     :path: "../../node_modules/@capacitor/status-bar"
+  CapawesomeCapacitorBadge:
+    :path: "../../node_modules/@capawesome/capacitor-badge"
 
 SPEC CHECKSUMS:
   Capacitor: 64a14f6a0638fc6b6ec7c751b04fd86688c78596
@@ -58,7 +63,8 @@ SPEC CHECKSUMS:
   CapacitorShare: 8a565649d321a05a1ae8b525b2a9b4f2d92c70ce
   CapacitorSplashScreen: 1281f7df4d9b4a72bccab8d03e6b2bbd17dff122
   CapacitorStatusBar: b692a4cf12b3fe3a7b7ece86da62106065d78fdc
+  CapawesomeCapacitorBadge: f2acd9e0b25f4a4c2ca6b5cc946d99747c1ffcdd
 
-PODFILE CHECKSUM: cd8d59b7da84bd7d78ca7fa9717f27708a809f22
+PODFILE CHECKSUM: a51b3019adb6485950519f9032e717afc1c5fb95
 
 COCOAPODS: 1.12.1
