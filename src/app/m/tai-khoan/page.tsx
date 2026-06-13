@@ -69,11 +69,6 @@ export default async function MobileAccountPage() {
           Thông tin cá nhân
           <span className="arrow"><FiChevronRight /></span>
         </Link>
-        <Link href="/" className="m-menu-item">
-          <span className="icon"><FiInfo /></span>
-          Về chúng tôi
-          <span className="arrow"><FiChevronRight /></span>
-        </Link>
         <Link href="/privacy-policy" className="m-menu-item">
           <span className="icon"><FiShield /></span>
           Chính sách bảo mật
