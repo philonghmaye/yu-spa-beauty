@@ -40,7 +40,7 @@ export default function ProfileForm({ user }: {
       const res = await deleteAccountAction();
       if (res.success) {
         toast.success('Tài khoản đã được xóa thành công');
-        await signOut({ callbackUrl: '/m/dang-nhap' });
+        await signOut({ callbackUrl: '/m' });
       } else {
         toast.error('Có lỗi xảy ra khi xóa tài khoản');
       }

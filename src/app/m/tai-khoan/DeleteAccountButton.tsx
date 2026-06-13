@@ -20,7 +20,7 @@ export default function DeleteAccountButton() {
       
       toast.success('Tài khoản đã được xóa');
       // Sign out and redirect
-      await signOut({ callbackUrl: '/m/dang-nhap' });
+      await signOut({ callbackUrl: '/m' });
     } catch {
       toast.error('Không thể xóa tài khoản. Vui lòng thử lại.');
       setDeleting(false);
