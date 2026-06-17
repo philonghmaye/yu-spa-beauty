@@ -69,6 +69,30 @@ export default function MobileLoginPage() {
 
   return (
     <div className="m-auth">
+      <Link
+        href="/m"
+        style={{
+          position: 'absolute',
+          top: 16,
+          left: 16,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 40,
+          height: 40,
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.8)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          color: 'var(--primary)',
+          textDecoration: 'none',
+          fontSize: '1.2rem',
+          transition: 'background 0.2s, transform 0.2s',
+          zIndex: 10,
+        }}
+        aria-label="Quay lại trang chủ"
+      >
+        ←
+      </Link>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <div style={{ fontSize: '2rem', marginBottom: 8 }}>✨</div>
         <h1><span style={{ background: 'linear-gradient(135deg, var(--primary), var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>YURI SPA</span></h1>
