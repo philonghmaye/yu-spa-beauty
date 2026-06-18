@@ -60,7 +60,17 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
-      # 5. Install CocoaPods dependencies
+      # 5. Setup Node.js and install dependencies
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      # 6. Install CocoaPods dependencies
       - name: Install CocoaPods
         run: |
           cd ios/App
