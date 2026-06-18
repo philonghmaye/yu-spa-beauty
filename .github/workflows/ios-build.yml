@@ -72,6 +72,12 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Build web & sync Capacitor
+        run: |
+          mkdir -p out
+          echo '<!DOCTYPE html><html><head></head><body></body></html>' > out/index.html
+          npx cap sync ios
+
       - name: Install CocoaPods
         run: |
           cd ios/App
