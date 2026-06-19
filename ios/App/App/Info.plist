@@ -74,5 +74,13 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Yuri Spa cần quyền truy cập camera để bạn chụp ảnh banner và cập nhật hình đại diện.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Yuri Spa cần quyền truy cập thư viện ảnh để bạn chọn hình ảnh cho banner và hồ sơ cá nhân.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Yuri Spa cần quyền lưu ảnh vào thư viện của bạn.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
