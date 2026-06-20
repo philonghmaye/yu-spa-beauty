@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import prisma from '@/lib/prisma';
 import { formatCurrency, getVietnamToday, getVietnamNow, getStatusLabel } from '@/lib/utils';
 import Link from 'next/link';
-import { FiCalendar, FiUsers, FiDollarSign, FiTrendingUp, FiClock, FiChevronRight, FiHome } from 'react-icons/fi';
+import { FiCalendar, FiUsers, FiClock, FiChevronRight, FiHome } from 'react-icons/fi';
 import AdminNotificationBell from '../AdminNotificationBell';
 
 async function getStats() {
@@ -15,12 +15,11 @@ async function getStats() {
     prisma.appointment.count({ where: { appointmentDate: today } }),
     prisma.appointment.count({ where: { status: 'PENDING' } }),
     prisma.customer.count(),
-    prisma.appointment.findMany({ where: { status: 'COMPLETED', appointmentDate: { gte: monthStart } } }),
+    prisma.appointment.count({ where: { status: 'COMPLETED', appointmentDate: { gte: monthStart } } }),
     prisma.employee.count({ where: { isAvailable: true, user: { isActive: true } } }),
   ]);
 
-  const monthRevenue = monthCompleted.reduce((sum, a) => sum + a.finalAmount, 0);
-  return { todayCount, pendingCount, totalCustomers, monthRevenue, monthCount: monthCompleted.length, activeStaff };
+  return { todayCount, pendingCount, totalCustomers, monthCount: monthCompleted, activeStaff };
 }
 
 async function getTodayAppointments() {
@@ -93,10 +92,10 @@ export default async function AdminMobileDashboard() {
         </div>
         <div style={{ background: '#fff', borderRadius: 12, padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e' }}><FiDollarSign /></div>
-            <span style={{ fontSize: '0.75rem', color: '#888' }}>Doanh thu</span>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e' }}><FiCalendar /></div>
+            <span style={{ fontSize: '0.75rem', color: '#888' }}>Hoàn thành</span>
           </div>
-          <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>{formatCurrency(stats.monthRevenue)}</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{stats.monthCount}</div>
           <div style={{ fontSize: '0.72rem', color: '#999' }}>tháng này</div>
         </div>
         <div style={{ background: '#fff', borderRadius: 12, padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>

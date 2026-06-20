@@ -8,7 +8,7 @@ const tabs = [
   { href: '/m/admin', label: 'Tổng quan', icon: <FiHome />, exact: true },
   { href: '/m/admin/lich-hen', label: 'Lịch hẹn', icon: <FiCalendar /> },
   { href: '/m/admin/nhan-vien', label: 'Nhân viên', icon: <FiUsers /> },
-  { href: '/m/admin/doanh-thu', label: 'Doanh thu', icon: <FiBarChart2 /> },
+
   { href: '/m/admin/cai-dat', label: 'Cài đặt', icon: <FiSettings /> },
 ];
 
