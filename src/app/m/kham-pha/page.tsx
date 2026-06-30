@@ -56,11 +56,22 @@ export default function ExplorePage() {
 
   const fetchServiceInfo = async (svcId: string) => {
     try {
-      // Use categories API to find service - lightweight
-      const res = await fetch(`/api/m/categories`);
-      const categories = await res.json();
-      // Search through categories won't work, need dedicated endpoint
-      // For now, pass null and let StaffList handle it
+      const res = await fetch(`/api/m/categories-with-services`);
+      const data = await res.json();
+      for (const cat of data) {
+        const found = cat.services.find((s: any) => s.id === svcId);
+        if (found) {
+          setServiceInfo({
+            id: found.id,
+            name: found.name,
+            categoryName: cat.name,
+            price: found.price,
+            discountPrice: found.discountPrice,
+            duration: found.duration,
+          });
+          break;
+        }
+      }
     } catch {}
   };
 

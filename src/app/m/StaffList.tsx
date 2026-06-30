@@ -15,7 +15,7 @@ interface StaffItem {
   reviewCount: number;
   isNew: boolean;
   position: string | null;
-  services: { id: string; name: string; category: string }[];
+  services: { id: string; name: string; category: string; price: number; discountPrice: number | null; duration: number; }[];
 }
 
 interface ServiceFilter {
@@ -172,7 +172,26 @@ export default function StaffList({
                     className="m-btn-book" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/m/nhan-vien/${staff.id}?action=book`);
+                      if (staff.services.length > 0) {
+                        const s = staff.services[0];
+                        const bookingData = {
+                          staffId: staff.id,
+                          staffName: staff.name,
+                          staffAvatar: staff.avatar,
+                          staffRating: staff.rating,
+                          staffReviewCount: staff.reviewCount,
+                          service: {
+                            id: s.id,
+                            name: s.name,
+                            price: s.discountPrice || s.price,
+                            duration: s.duration,
+                          },
+                        };
+                        sessionStorage.setItem('mobileBooking', JSON.stringify(bookingData));
+                        router.push('/m/dat-lich');
+                      } else {
+                        router.push(`/m/nhan-vien/${staff.id}`);
+                      }
                     }}
                     style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer' }}
                   >
