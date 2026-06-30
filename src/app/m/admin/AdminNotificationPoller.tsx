@@ -118,8 +118,8 @@ export default function AdminNotificationPoller() {
     // Kiểm tra ngay lập tức
     checkNewBookings();
 
-    // Polling mỗi 30 giây
-    intervalRef.current = setInterval(checkNewBookings, 30000);
+    // Polling mỗi 3 giây để thông báo tức thì
+    intervalRef.current = setInterval(checkNewBookings, 3000);
 
     return () => {
       if (intervalRef.current) {
