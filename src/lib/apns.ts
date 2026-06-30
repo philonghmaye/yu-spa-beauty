@@ -81,6 +81,7 @@ async function sendPushToDevice(
   deviceToken: string,
   title: string,
   body: string,
+  badgeCount: number,
   data?: Record<string, string>
 ): Promise<boolean> {
   const bundleId = process.env.APNS_BUNDLE_ID || 'com.yurispa.beauty';
@@ -99,7 +100,7 @@ async function sendPushToDevice(
       aps: {
         alert: { title, body },
         sound: 'default',
-        badge: 1,
+        badge: badgeCount,
         'mutable-content': 1,
       },
       ...data,
@@ -187,9 +188,14 @@ export async function sendPushToAdmins(
       return;
     }
 
+    // Đếm số đơn chờ xác nhận để cập nhật badge trên icon app
+    const pendingCount = await prisma.appointment.count({
+      where: { status: 'PENDING' },
+    });
+
     // Gửi push đến tất cả devices (parallel)
     const results = await Promise.allSettled(
-      tokens.map((t) => sendPushToDevice(t.token, title, body, data))
+      tokens.map((t) => sendPushToDevice(t.token, title, body, pendingCount, data))
     );
 
     const sent = results.filter((r) => r.status === 'fulfilled' && r.value).length;
