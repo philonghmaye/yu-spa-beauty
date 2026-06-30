@@ -15,27 +15,32 @@ export default function PushDebugButton() {
 
     try {
       setLoading(true);
-      const { PushNotifications } = await import('@capacitor/push-notifications');
+      const cachedToken = localStorage.getItem('cached_push_token');
       
-      const perm = await PushNotifications.requestPermissions();
-      if (perm.receive !== 'granted') {
-        alert('Lỗi: Bạn đã TỪ CHỐI cấp quyền thông báo cho ứng dụng này. Vui lòng vào Cài đặt máy -> Yuri Spa -> Thông báo -> Cho phép.');
-        setLoading(false);
-        return;
+      const { PushNotifications } = await import('@capacitor/push-notifications');
+      const perm = await PushNotifications.checkPermissions();
+      
+      alert('Tình trạng hiện tại:\\nQuyền: ' + perm.receive + '\\nToken đã lưu máy: ' + (cachedToken ? cachedToken.substring(0, 15) + '...' : 'KHÔNG CÓ'));
+
+      if (cachedToken) {
+         savePushToken(cachedToken);
+         alert('Đã thử gửi lại token lên Server!');
+      } else {
+         const newPerm = await PushNotifications.requestPermissions();
+         if (newPerm.receive === 'granted') {
+             alert('Đang yêu cầu Apple cấp Token mới...');
+             PushNotifications.addListener('registration', (token) => {
+                alert('Apple đã cấp Token: ' + token.value.substring(0, 15) + '...');
+                savePushToken(token.value);
+             });
+             PushNotifications.addListener('registrationError', (error) => {
+                alert('Apple từ chối cấp Token: ' + JSON.stringify(error));
+             });
+             await PushNotifications.register();
+         }
       }
-
-      PushNotifications.addListener('registration', (token) => {
-        savePushToken(token.value);
-        alert('Đăng ký Push Token THÀNH CÔNG! Token: ' + token.value.substring(0, 15) + '...');
-      });
-
-      PushNotifications.addListener('registrationError', (error) => {
-        alert('Lỗi đăng ký từ Apple APNs: ' + JSON.stringify(error));
-      });
-
-      await PushNotifications.register();
     } catch (e: any) {
-      alert('Lỗi không xác định: ' + e.message);
+      alert('Lỗi: ' + e.message);
     } finally {
       setTimeout(() => setLoading(false), 2000);
     }
