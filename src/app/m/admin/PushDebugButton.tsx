@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { isNative, savePushToken } from '@/lib/native';
@@ -9,7 +9,7 @@ export default function PushDebugButton() {
 
   const handleDebugPush = async () => {
     if (!isNative()) {
-      alert('Ch?c nang n�y ch? ho?t d?ng tr�n ?ng d?ng di?n tho?i (App Store / TestFlight). Tr�n tr�nh duy?t web ho?c PWA kh�ng du?c h? tr?.');
+      alert('Chức năng này chỉ hoạt động trên Ứng dụng điện thoại (App Store / TestFlight). Trên trình duyệt web hoặc PWA không được hỗ trợ.');
       return;
     }
 
@@ -19,23 +19,23 @@ export default function PushDebugButton() {
       
       const perm = await PushNotifications.requestPermissions();
       if (perm.receive !== 'granted') {
-        alert('L?i: B?n d� T? CH?I c?p quy?n th�ng b�o cho ?ng d?ng n�y. Vui l�ng v�o C�i d?t m�y -> Yuri Spa -> Th�ng b�o -> Cho ph�p.');
+        alert('Lỗi: Bạn đã TỪ CHỐI cấp quyền thông báo cho ứng dụng này. Vui lòng vào Cài đặt máy -> Yuri Spa -> Thông báo -> Cho phép.');
         setLoading(false);
         return;
       }
 
       PushNotifications.addListener('registration', (token) => {
         savePushToken(token.value);
-        alert('�ang k� Push Token TH�NH C�NG! Token: ' + token.value.substring(0, 15) + '...');
+        alert('Đăng ký Push Token THÀNH CÔNG! Token: ' + token.value.substring(0, 15) + '...');
       });
 
       PushNotifications.addListener('registrationError', (error) => {
-        alert('L?i dang k� t? Apple APNs: ' + JSON.stringify(error));
+        alert('Lỗi đăng ký từ Apple APNs: ' + JSON.stringify(error));
       });
 
       await PushNotifications.register();
     } catch (e: any) {
-      alert('L?i kh�ng x�c d?nh: ' + e.message);
+      alert('Lỗi không xác định: ' + e.message);
     } finally {
       setTimeout(() => setLoading(false), 2000);
     }
@@ -52,7 +52,7 @@ export default function PushDebugButton() {
         marginTop: '10px', cursor: 'pointer'
       }}
     >
-      <FiBell /> {loading ? '�ang ki?m tra...' : 'Ch?n do�n l?i Th�ng B�o'}
+      <FiBell /> {loading ? 'Đang kiểm tra...' : 'Chẩn đoán lỗi Thông Báo'}
     </button>
   );
 }
