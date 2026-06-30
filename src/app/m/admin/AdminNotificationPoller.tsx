@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { isNative } from '@/lib/native';
+import { isNative, retrySavePushToken } from '@/lib/native';
 
 /**
  * Polling component: kiểm tra booking mới mỗi 30 giây.
@@ -28,6 +28,8 @@ export default function AdminNotificationPoller() {
   };
 
   useEffect(() => {
+    retrySavePushToken();
+
     const checkNewBookings = async () => {
       try {
         // Lấy số đơn chờ xác nhận (PENDING) cho badge

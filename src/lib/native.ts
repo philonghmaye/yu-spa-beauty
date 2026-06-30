@@ -59,8 +59,11 @@ export async function initPushNotifications() {
 }
 
 // Lưu push token lên server
-async function savePushToken(token: string) {
+export async function savePushToken(token: string) {
   try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cached_push_token', token);
+    }
     await fetch('/api/push-token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -68,6 +71,14 @@ async function savePushToken(token: string) {
     });
   } catch (e) {
     console.error('Failed to save push token:', e);
+  }
+}
+
+export async function retrySavePushToken() {
+  if (!isNative() || typeof window === 'undefined') return;
+  const token = localStorage.getItem('cached_push_token');
+  if (token) {
+    await savePushToken(token);
   }
 }
 
