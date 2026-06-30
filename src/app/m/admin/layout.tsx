@@ -1,7 +1,6 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import AdminMobileTabBar from './AdminTabBar';
-import AdminNotificationPoller from './AdminNotificationPoller';
 
 export default async function AdminMobileLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -11,7 +10,6 @@ export default async function AdminMobileLayout({ children }: { children: React.
 
   return (
     <>
-      <AdminNotificationPoller />
       <div style={{ paddingBottom: 70, minHeight: '100vh', background: 'var(--neutral-50)' }}>
         {children}
       </div>

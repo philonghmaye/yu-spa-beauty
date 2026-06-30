@@ -2,6 +2,7 @@ import './mobile.css';
 import MobileTabBar from './MobileTabBar';
 import MobileLangWrapper from './MobileLangWrapper';
 import NativeInit from './NativeInit';
+import GlobalAdminPollerWrapper from './GlobalAdminPollerWrapper';
 
 export const metadata = {
   title: 'YURI SPA BEAUTY — Đặt lịch Spa',
@@ -14,6 +15,7 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
     <div className="mobile-app">
       <MobileLangWrapper>
         <NativeInit />
+        <GlobalAdminPollerWrapper />
         {children}
         <MobileTabBar />
       </MobileLangWrapper>
