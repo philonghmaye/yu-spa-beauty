@@ -115,7 +115,9 @@ export default function ServiceActions({ categories, mode, serviceId, isActive, 
     try {
       await deleteService(id);
       toast.success('Đã xóa dịch vụ');
-    } catch { toast.error('Có lỗi xảy ra'); }
+    } catch (err: any) { 
+      toast.error(err.message || 'Có lỗi xảy ra'); 
+    }
   };
 
   // HEADER MODE: Show "Add" button

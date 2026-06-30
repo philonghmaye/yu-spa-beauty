@@ -296,3 +296,16 @@ model Setting {
   value     String
   updatedAt DateTime @updatedAt
 }
+
+// ============================================
+// Push Token (APNs device tokens)
+// ============================================
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  platform  String   // ios, android, web
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}

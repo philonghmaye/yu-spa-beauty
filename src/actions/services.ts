@@ -69,7 +69,14 @@ export async function updateService(id: string, data: {
 }
 
 export async function deleteService(id: string) {
-  await prisma.service.update({ where: { id }, data: { isActive: false } });
+  try {
+    await prisma.service.delete({ where: { id } });
+  } catch (error: any) {
+    if (error.code === 'P2003') {
+      throw new Error('Dịch vụ này đã có lịch hẹn nên không thể xóa vĩnh viễn. Hãy dùng nút Tạm ẩn.');
+    }
+    throw error;
+  }
   revalidatePath('/admin/dich-vu');
   revalidatePath('/dich-vu');
 }

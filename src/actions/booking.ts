@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { addMinutesToTime, getVietnamNow, generateSlotTimes } from '@/lib/utils';
 import { sendBookingConfirmation } from '@/lib/email';
+import { sendPushToAdmins } from '@/lib/apns';
 import { getBusinessHours } from '@/actions/settings';
 
 // ============ LOAD DATA FOR BOOKING FORM ============
@@ -108,7 +109,11 @@ export async function createBooking(data: {
   });
 
   if (services.length === 0) {
-    throw new Error('Vui lòng chọn ít nhất 1 dịch vụ');
+    if (data.serviceIds && data.serviceIds.length > 0) {
+      throw new Error('Dịch vụ đã chọn không tồn tại hoặc đã ngừng cung cấp. Vui lòng chọn lại.');
+    } else {
+      throw new Error('Vui lòng chọn ít nhất 1 dịch vụ');
+    }
   }
 
   const totalDuration = services.reduce((sum, s) => sum + s.duration, 0);
@@ -311,6 +316,19 @@ export async function createBooking(data: {
   } catch (err) {
     console.error('Failed to create admin notification:', err);
     // Don't fail the booking if notification creation fails
+  }
+
+  // 6c. Send push notification to admin iPhone app
+  try {
+    const serviceNames = appointment.services.map(s => s.service.name).join(', ');
+    await sendPushToAdmins(
+      '📅 Lịch hẹn mới!',
+      `${appointment.customer.user.name} đặt ${serviceNames} lúc ${appointment.startTime} ngày ${appointment.appointmentDate}`,
+      { appointmentId: appointment.id }
+    );
+  } catch (err) {
+    console.error('Failed to send push notification:', err);
+    // Don't fail the booking if push fails
   }
 
   // 7. Revalidate paths

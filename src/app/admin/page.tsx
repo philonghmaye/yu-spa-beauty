@@ -33,11 +33,12 @@ async function getRecentAppointments() {
 }
 
 export default async function AdminDashboard() {
+
+export default async function AdminDashboard() {
   const [stats, appointments] = await Promise.all([
     getStats(),
     getRecentAppointments(),
   ]);
-
 
   return (
     <>
