@@ -104,7 +104,7 @@ export default function StaffBooking({
   }, [selectedCategory, grouped, search]);
 
   return (
-    <div className="m-service-section">
+    <div id="booking" className="m-service-section">
       <h2>{t.services}</h2>
 
       {/* Category Filter Chips */}

@@ -143,8 +143,8 @@ export default function StaffList({
             </div>
           </div>
         ) : (
-          <Link href={`/m/nhan-vien/${staff.id}`} key={staff.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div className="m-staff-card">
+          <div key={staff.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <div className="m-staff-card" onClick={() => router.push(`/m/nhan-vien/${staff.id}`)} style={{ cursor: 'pointer' }}>
               <div className="m-staff-img-wrap">
                 {staff.avatar ? (
                   <Image src={staff.avatar} alt={staff.name} className="m-staff-img" width={100} height={120} />
@@ -168,11 +168,20 @@ export default function StaffList({
                   <span style={{ fontSize: '0.78rem', color: 'var(--neutral-400)' }}>
                     {staff.services.length} dịch vụ
                   </span>
-                  <span className="m-btn-book">{t.bookNow}</span>
+                  <button 
+                    className="m-btn-book" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/m/nhan-vien/${staff.id}#booking`);
+                    }}
+                    style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer' }}
+                  >
+                    {t.bookNow}
+                  </button>
                 </div>
               </div>
             </div>
-          </Link>
+          </div>
         )
       )) : (
         <div className="m-empty">
