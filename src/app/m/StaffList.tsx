@@ -172,7 +172,7 @@ export default function StaffList({
                     className="m-btn-book" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/m/nhan-vien/${staff.id}#booking`);
+                      router.push(`/m/nhan-vien/${staff.id}?action=book`);
                     }}
                     style={{ border: 'none', fontFamily: 'inherit', cursor: 'pointer' }}
                   >

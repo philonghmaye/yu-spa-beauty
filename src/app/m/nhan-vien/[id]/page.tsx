@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import StaffBooking from './StaffBooking';
 import StaffGallery from './StaffGallery';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { FiArrowLeft, FiHeart, FiShare2, FiCheckCircle } from 'react-icons/fi';
 
 export default async function StaffDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -61,14 +62,16 @@ export default async function StaffDetailPage({ params }: { params: Promise<{ id
       </div>
 
       {/* Services */}
-      <StaffBooking
-        staffId={staff.id}
-        staffName={staff.name}
-        staffAvatar={allImages[0] || staff.avatar}
-        staffRating={staff.rating}
-        staffReviewCount={staff.reviewCount}
-        services={staff.services}
-      />
+      <Suspense fallback={<div style={{ padding: 20, textAlign: 'center' }}>Đang tải dịch vụ...</div>}>
+        <StaffBooking
+          staffId={staff.id}
+          staffName={staff.name}
+          staffAvatar={allImages[0] || staff.avatar}
+          staffRating={staff.rating}
+          staffReviewCount={staff.reviewCount}
+          services={staff.services}
+        />
+      </Suspense>
 
       {/* Reviews Section */}
       <div style={{ padding: '16px 16px 100px' }}>

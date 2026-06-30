@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FiChevronRight, FiSearch } from 'react-icons/fi';
 import { useLang } from '../../LangContext';
 
@@ -50,7 +50,20 @@ export default function StaffBooking({
   services: ServiceItem[];
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t, tn } = useLang();
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'book') {
+      const el = document.getElementById('booking');
+      if (el) {
+        // Add a slight delay to ensure rendering is complete
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+      }
+    }
+  }, [searchParams]);
 
   // Prefetch booking page + user data ngay khi render
   useEffect(() => {
