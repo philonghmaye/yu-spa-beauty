@@ -85,9 +85,12 @@ async function sendPushToDevice(
 ): Promise<boolean> {
   const bundleId = process.env.APNS_BUNDLE_ID || 'com.yurispa.beauty';
   const isProduction = process.env.APNS_ENVIRONMENT !== 'development';
-  const host = isProduction
+  const primaryHost = isProduction
     ? 'https://api.push.apple.com'
     : 'https://api.sandbox.push.apple.com';
+  const fallbackHost = isProduction
+    ? 'https://api.sandbox.push.apple.com'
+    : 'https://api.push.apple.com';
 
   try {
     const jwt = await getAPNsToken();
@@ -102,29 +105,43 @@ async function sendPushToDevice(
       ...data,
     };
 
-    const response = await fetch(`${host}/3/device/${deviceToken}`, {
-      method: 'POST',
-      headers: {
-        'authorization': `bearer ${jwt}`,
-        'apns-topic': bundleId,
-        'apns-push-type': 'alert',
-        'apns-priority': '10',
-        'apns-expiration': '0',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    const sendToHost = async (host: string) => {
+      const response = await fetch(`${host}/3/device/${deviceToken}`, {
+        method: 'POST',
+        headers: {
+          'authorization': `bearer ${jwt}`,
+          'apns-topic': bundleId,
+          'apns-push-type': 'alert',
+          'apns-priority': '10',
+          'apns-expiration': '0',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      console.error(`APNs error for ${deviceToken.slice(0, 8)}...:`, response.status, error);
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        return { ok: false, status: response.status, error };
+      }
+      return { ok: true };
+    };
 
+    let result = await sendToHost(primaryHost);
+
+    // If BadDeviceToken, the token might belong to the other environment (TestFlight vs Xcode debug)
+    if (!result.ok && result.error?.reason === 'BadDeviceToken') {
+      console.log(`Token failed on primary host, retrying on fallback host...`);
+      result = await sendToHost(fallbackHost);
+    }
+
+    if (!result.ok) {
+      console.error(`APNs error for ${deviceToken.slice(0, 8)}...:`, result.status, result.error);
+      
       // Token không hợp lệ → xóa khỏi DB
-      if (response.status === 410 || (error as { reason?: string }).reason === 'Unregistered') {
+      if (result.status === 410 || result.error?.reason === 'Unregistered' || result.error?.reason === 'BadDeviceToken') {
         await prisma.pushToken.deleteMany({ where: { token: deviceToken } });
         console.log(`Deleted invalid push token: ${deviceToken.slice(0, 8)}...`);
       }
-
       return false;
     }
 
