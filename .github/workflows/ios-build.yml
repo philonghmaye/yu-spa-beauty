@@ -90,6 +90,21 @@ jobs:
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' App.xcodeproj/project.pbxproj
           sed -i '' 's/DEVELOPMENT_TEAM = G66VK49BR8;/DEVELOPMENT_TEAM = G66VK49BR8;\n\t\t\t\tCODE_SIGN_IDENTITY = "Apple Distribution";\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "'"$PP_NAME"'";/g' App.xcodeproj/project.pbxproj
 
+      - name: Verify entitlements before build
+        run: |
+          echo "=== App.entitlements ==="
+          cat ios/App/App/App.entitlements
+          echo ""
+          echo "=== AppDelegate.swift (first 20 lines) ==="
+          head -20 ios/App/App/AppDelegate.swift
+          echo ""
+          echo "=== CODE_SIGN_ENTITLEMENTS in pbxproj ==="
+          grep -n "CODE_SIGN_ENTITLEMENTS" ios/App/App.xcodeproj/project.pbxproj || echo "NOT FOUND!"
+          echo ""
+          echo "=== Provisioning Profile entitlements ==="
+          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          security cms -D -i $PP_PATH | grep -A5 "aps-environment" || echo "aps-environment NOT in profile!"
+
       - name: Build iOS Archive
         run: |
           cd ios/App
@@ -101,6 +116,14 @@ jobs:
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -destination 'generic/platform=iOS' \
             -allowProvisioningUpdates
+
+      - name: Verify entitlements in archive
+        run: |
+          echo "=== Embedded entitlements in .app ==="
+          codesign -d --entitlements :- "$RUNNER_TEMP/App.xcarchive/Products/Applications/App.app" 2>/dev/null || echo "Failed to read entitlements"
+          echo ""
+          echo "=== Provisioning profile in .app ==="
+          security cms -D -i "$RUNNER_TEMP/App.xcarchive/Products/Applications/App.app/embedded.mobileprovision" 2>/dev/null | grep -A3 "aps-environment" || echo "No aps-environment in embedded profile"
 
       - name: Export IPA
         env:
