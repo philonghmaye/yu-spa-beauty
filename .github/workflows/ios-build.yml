@@ -72,11 +72,44 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Backup native files before cap sync
+        run: |
+          echo "=== AppDelegate.swift BEFORE cap sync (full) ==="
+          cat ios/App/App/AppDelegate.swift
+          echo ""
+          echo "=== App.entitlements BEFORE cap sync ==="
+          cat ios/App/App/App.entitlements
+          cp ios/App/App/AppDelegate.swift /tmp/AppDelegate.swift.bak
+          cp ios/App/App/App.entitlements /tmp/App.entitlements.bak
+
       - name: Build web & sync Capacitor
         run: |
           mkdir -p out
           echo '<!DOCTYPE html><html><head></head><body></body></html>' > out/index.html
           npx cap sync ios
+
+      - name: Check and restore native files after cap sync
+        run: |
+          echo "=== Checking if cap sync modified AppDelegate ==="
+          if diff ios/App/App/AppDelegate.swift /tmp/AppDelegate.swift.bak > /dev/null 2>&1; then
+            echo "✅ AppDelegate.swift was NOT modified by cap sync"
+          else
+            echo "⚠️ AppDelegate.swift WAS MODIFIED by cap sync! Restoring..."
+            cp /tmp/AppDelegate.swift.bak ios/App/App/AppDelegate.swift
+            echo "✅ Restored original AppDelegate.swift"
+          fi
+          
+          if diff ios/App/App/App.entitlements /tmp/App.entitlements.bak > /dev/null 2>&1; then
+            echo "✅ App.entitlements was NOT modified by cap sync"
+          else
+            echo "⚠️ App.entitlements WAS MODIFIED by cap sync! Restoring..."
+            cp /tmp/App.entitlements.bak ios/App/App/App.entitlements
+            echo "✅ Restored original App.entitlements"
+          fi
+          
+          echo ""
+          echo "=== AppDelegate.swift FINAL (first 30 lines) ==="
+          head -30 ios/App/App/AppDelegate.swift
 
       - name: Install CocoaPods
         run: |
