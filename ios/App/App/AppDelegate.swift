@@ -6,111 +6,150 @@ import UserNotifications
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    
+    // Lưu token để retry
+    private var pendingToken: String?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         UNUserNotificationCenter.current().delegate = self
         
-        // Đăng ký push notifications sau khi Capacitor WebView đã load
-        // Delay 3 giây để đảm bảo WebView và JavaScript đã sẵn sàng
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
-                if granted {
-                    DispatchQueue.main.async {
-                        application.registerForRemoteNotifications()
-                    }
-                }
+        // Xin quyền thông báo rồi đăng ký push
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+            guard granted else { return }
+            DispatchQueue.main.async {
+                application.registerForRemoteNotifications()
             }
         }
         
         return true
     }
 
-    // APNs token received — save to multiple places for reliability
+    // ====== PUSH TOKEN RECEIVED ======
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        // Convert token to hex string
         let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+        print("[PUSH] Token received: \(tokenString.prefix(20))...")
         
-        // 1. Lưu vào UserDefaults (backup)
+        // Lưu vào UserDefaults
         UserDefaults.standard.set(tokenString, forKey: "apns_device_token")
+        UserDefaults.standard.removeObject(forKey: "apns_error")
         
-        // 2. Forward to Capacitor plugin (standard way)
+        // Forward to Capacitor plugin
         NotificationCenter.default.post(
             name: .capacitorDidRegisterForRemoteNotifications,
             object: deviceToken
         )
         
-        // 3. Inject directly into WebView localStorage (bypass plugin)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        // GỌI TRỰC TIẾP API VERCEL (không cần WebView)
+        sendTokenToServer(tokenString)
+        
+        // Inject vào WebView (backup)
+        pendingToken = tokenString
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
             self.injectTokenToWebView(tokenString)
         }
     }
 
-    // APNs registration failed
+    // ====== PUSH REGISTRATION FAILED ======
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        print("APNs registration failed: \(error.localizedDescription)")
+        let errorMsg = error.localizedDescription
+        print("[PUSH] Registration FAILED: \(errorMsg)")
         
-        // Save error for debugging
-        UserDefaults.standard.set(error.localizedDescription, forKey: "apns_registration_error")
+        UserDefaults.standard.set(errorMsg, forKey: "apns_error")
         
         NotificationCenter.default.post(
             name: .capacitorDidFailToRegisterForRemoteNotifications,
             object: error
         )
+        
+        // Inject error vào WebView để debug button có thể đọc
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            self.injectErrorToWebView(errorMsg)
+        }
     }
     
-    // Inject token directly into WebView localStorage
+    // ====== GỌI TRỰC TIẾP API VERCEL BẰNG URLSESSION ======
+    private func sendTokenToServer(_ token: String) {
+        let urlString = "https://yuri-spa-beauty.vercel.app/api/push-token-native"
+        guard let url = URL(string: urlString) else { return }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: String] = [
+            "token": token,
+            "bundleId": Bundle.main.bundleIdentifier ?? "com.yurispa.beauty",
+            "platform": "ios"
+        ]
+        
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("[PUSH] Server error: \(error.localizedDescription)")
+                // Retry sau 10 giây
+                DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
+                    self.sendTokenToServer(token)
+                }
+                return
+            }
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("[PUSH] Server responded: \(httpResponse.statusCode)")
+                if let data = data, let body = String(data: data, encoding: .utf8) {
+                    print("[PUSH] Server body: \(body)")
+                }
+                
+                if httpResponse.statusCode == 200 {
+                    UserDefaults.standard.set(true, forKey: "apns_token_sent")
+                }
+            }
+        }.resume()
+    }
+    
+    // ====== INJECT TOKEN VÀO WEBVIEW (BACKUP) ======
     private func injectTokenToWebView(_ token: String) {
         guard let vc = window?.rootViewController as? CAPBridgeViewController,
               let webView = vc.bridge?.webView else {
-            // WebView not ready, retry after 2 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            // Retry sau 3 giây
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                 self.injectTokenToWebView(token)
             }
             return
         }
         
-        let js = """
-        (function() {
-            localStorage.setItem('cached_push_token', '\(token)');
-            console.log('Native injected push token: \(token.prefix(15))...');
-            
-            // Also try to send to server immediately
-            fetch('/api/push-token', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: '\(token)', platform: 'ios' })
-            }).then(function(r) {
-                console.log('Push token sent to server:', r.status);
-            }).catch(function(e) {
-                console.log('Failed to send push token:', e);
-            });
-        })();
-        """
-        
-        webView.evaluateJavaScript(js) { result, error in
+        let js = "localStorage.setItem('cached_push_token','\(token)');"
+        webView.evaluateJavaScript(js) { _, error in
             if let error = error {
-                print("Failed to inject token to WebView: \(error)")
-                // Retry after 3 seconds
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                    self.injectTokenToWebView(token)
-                }
+                print("[PUSH] WebView inject failed: \(error)")
             } else {
-                print("Successfully injected push token to WebView")
+                print("[PUSH] WebView inject OK")
             }
         }
     }
-
-    func applicationDidEnterBackground(_ application: UIApplication) {
+    
+    // ====== INJECT ERROR VÀO WEBVIEW ======
+    private func injectErrorToWebView(_ error: String) {
+        guard let vc = window?.rootViewController as? CAPBridgeViewController,
+              let webView = vc.bridge?.webView else { return }
+        
+        let safeError = error.replacingOccurrences(of: "'", with: "\\'")
+        let js = "localStorage.setItem('apns_native_error','\(safeError)');"
+        webView.evaluateJavaScript(js, completionHandler: nil)
     }
 
-    func applicationWillEnterForeground(_ application: UIApplication) {
-    }
-
+    // ====== STANDARD DELEGATE METHODS ======
+    
     func applicationDidBecomeActive(_ application: UIApplication) {
+        // Retry token injection khi app quay lại foreground
+        if let token = pendingToken ?? UserDefaults.standard.string(forKey: "apns_device_token") {
+            injectTokenToWebView(token)
+        }
     }
 
-    func applicationWillTerminate(_ application: UIApplication) {
-    }
+    func applicationDidEnterBackground(_ application: UIApplication) {}
+    func applicationWillEnterForeground(_ application: UIApplication) {}
+    func applicationWillTerminate(_ application: UIApplication) {}
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
@@ -119,12 +158,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
-
 }
 
 // MARK: - UNUserNotificationCenterDelegate
 extension AppDelegate: UNUserNotificationCenterDelegate {
-    // Hiển thị notification khi app đang mở (foreground)
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .badge, .sound])
     }
