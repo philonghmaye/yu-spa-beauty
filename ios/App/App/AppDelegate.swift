@@ -8,9 +8,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Register for push notifications
+        // QUAN TRỌNG: KHÔNG gọi registerForRemoteNotifications() ở đây!
+        // Để Capacitor PushNotifications plugin tự quản lý đăng ký từ JavaScript.
+        // Nếu gọi ở đây, token sẽ bị mất vì JavaScript chưa sẵn sàng nhận.
         UNUserNotificationCenter.current().delegate = self
-        application.registerForRemoteNotifications()
         return true
     }
 
