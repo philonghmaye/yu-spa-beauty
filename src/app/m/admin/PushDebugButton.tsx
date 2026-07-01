@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { isNative, reRegisterPush, retrySavePushToken } from '@/lib/native';
+import { isNative, retrySavePushToken } from '@/lib/native';
 import { FiBell } from 'react-icons/fi';
 
 export default function PushDebugButton() {
@@ -9,26 +9,20 @@ export default function PushDebugButton() {
 
   const handleDebugPush = async () => {
     if (!isNative()) {
-      alert('Chức năng này chỉ hoạt động trên Ứng dụng điện thoại (App Store / TestFlight). Trên trình duyệt web hoặc PWA không được hỗ trợ.');
+      alert('Chức năng này chỉ hoạt động trên App iOS. Trình duyệt web không hỗ trợ.');
       return;
     }
 
     try {
       setLoading(true);
 
-      // Bước 1: Hiển thị trạng thái hiện tại
+      // Kiểm tra token trong localStorage (có thể được inject bởi native Swift)
       const cachedToken = typeof window !== 'undefined' ? localStorage.getItem('cached_push_token') : null;
       
-      const statusMsg = [
-        '📱 TRẠNG THÁI HIỆN TẠI:',
-        `Token đã lưu: ${cachedToken ? '✅ CÓ (' + cachedToken.substring(0, 15) + '...)' : '❌ KHÔNG CÓ'}`,
-        '',
-        'Bấm OK để thử đăng ký lại với Apple...',
-      ].join('\n');
-      alert(statusMsg);
-
-      // Bước 2: Nếu đã có token, thử gửi lên server trước
       if (cachedToken) {
+        // ĐÃ CÓ TOKEN! Gửi lên server
+        alert(`✅ ĐÃ CÓ TOKEN!\n\nToken: ${cachedToken.substring(0, 20)}...\n\nĐang gửi lên server và test push...`);
+        
         await retrySavePushToken();
         
         // Gửi test push
@@ -36,42 +30,60 @@ export default function PushDebugButton() {
         const testData = await testRes.json().catch(() => ({}));
         
         alert([
-          '🔔 KẾT QUẢ:',
-          `Token: ✅ Có sẵn`,
-          `Gửi lên server: ✅ Đã gửi`,
-          `Test push: ${testData.sent ? '✅ Đã gửi ' + testData.sent + ' thiết bị' : '❌ ' + (testData.error || 'Lỗi')}`,
+          '🔔 KẾT QUẢ TEST PUSH:',
           '',
-          testData.sent ? 'Bạn sẽ nhận được thông báo test ngay bây giờ!' : 'Kiểm tra lại cấu hình APNs trên Vercel.',
-        ].join('\n'));
-        return;
-      }
-
-      // Bước 3: Không có token → đăng ký mới
-      const result = await reRegisterPush();
-
-      if (result.token) {
-        // Thành công! Gửi test push luôn
-        const testRes = await fetch('/api/admin/test-push', { method: 'POST' });
-        const testData = await testRes.json().catch(() => ({}));
-        
-        alert([
-          '🎉 THÀNH CÔNG!',
-          `Token mới: ${result.token.substring(0, 15)}...`,
-          `Test push: ${testData.sent ? '✅ Đã gửi' : '❌ Lỗi'}`,
-          '',
-          testData.sent ? 'Bạn sẽ nhận được thông báo test!' : 'Token OK nhưng server chưa gửi được.',
+          `Gửi lên server: ✅`,
+          `Test push: ${testData.sent ? '✅ Đã gửi! Chờ thông báo...' : '❌ Lỗi: ' + (testData.error || 'Unknown')}`,
         ].join('\n'));
       } else {
-        alert([
-          '❌ KHÔNG NHẬN ĐƯỢC TOKEN',
-          '',
-          `Lỗi: ${result.error || 'Apple không phản hồi'}`,
-          '',
-          'Nguyên nhân có thể:',
-          '1. App chưa có Push Notification Capability',
-          '2. Provisioning Profile chưa bật Push',
-          '3. Cần cài lại app từ TestFlight',
-        ].join('\n'));
+        // CHƯA CÓ TOKEN
+        // Thử đăng ký qua Capacitor plugin
+        try {
+          const { PushNotifications } = await import('@capacitor/push-notifications');
+          const perm = await PushNotifications.checkPermissions();
+          
+          // Hiển thị trạng thái chi tiết
+          alert([
+            '❌ CHƯA CÓ TOKEN',
+            '',
+            `Quyền iOS: ${perm.receive}`,
+            `localStorage: KHÔNG CÓ`,
+            '',
+            'Đang thử đăng ký lại...',
+            'Nếu vẫn không được, thử:',
+            '1. Tắt app hoàn toàn (vuốt lên)',
+            '2. Mở lại app, đợi 5 giây',
+            '3. Bấm nút này lại',
+          ].join('\n'));
+
+          if (perm.receive !== 'granted') {
+            await PushNotifications.requestPermissions();
+          }
+          
+          // Xóa listener cũ và gắn mới
+          await PushNotifications.removeAllListeners();
+          
+          // Đợi 5 giây để xem native inject có hoạt động không
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          
+          // Kiểm tra lại localStorage
+          const retryToken = localStorage.getItem('cached_push_token');
+          if (retryToken) {
+            alert(`✅ THÀNH CÔNG! Token được inject bởi native!\n\nToken: ${retryToken.substring(0, 20)}...`);
+            await retrySavePushToken();
+          } else {
+            alert([
+              '❌ VẪN KHÔNG CÓ TOKEN',
+              '',
+              'Nguyên nhân có thể:',
+              '1. Chưa cập nhật app mới từ TestFlight',
+              '2. Cần tắt app hoàn toàn rồi mở lại',
+              '3. Provisioning Profile chưa đúng',
+            ].join('\n'));
+          }
+        } catch (pluginErr: any) {
+          alert('Lỗi plugin: ' + pluginErr.message);
+        }
       }
     } catch (e: any) {
       alert('Lỗi: ' + e.message);
