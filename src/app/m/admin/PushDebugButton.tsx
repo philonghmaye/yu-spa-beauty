@@ -1,81 +1,62 @@
 'use client';
 
 import { useState } from 'react';
-import { isNative, retrySavePushToken } from '@/lib/native';
+import { isNative } from '@/lib/native';
 import { FiBell } from 'react-icons/fi';
 
 export default function PushDebugButton() {
   const [loading, setLoading] = useState(false);
 
   const handleDebugPush = async () => {
-    if (!isNative()) {
-      alert('Chỉ hoạt động trên App iOS (TestFlight/App Store).');
-      return;
-    }
-
     try {
       setLoading(true);
 
-      const cachedToken = localStorage.getItem('cached_push_token');
-      const nativeError = localStorage.getItem('apns_native_error');
+      // Kiểm tra token local
+      const cachedToken = typeof window !== 'undefined' ? localStorage.getItem('cached_push_token') : null;
+      const nativeError = typeof window !== 'undefined' ? localStorage.getItem('apns_native_error') : null;
       
-      if (cachedToken) {
-        // CÓ TOKEN → gửi lên server và test
-        await retrySavePushToken();
+      // Đọc log từ server
+      let serverLogs = '';
+      try {
+        const logRes = await fetch('/api/push-debug-log');
+        const logData = await logRes.json();
+        if (logData.logs && logData.logs.length > 0) {
+          serverLogs = logData.logs.map((l: any) => 
+            `${new Date(l.createdAt).toLocaleTimeString('vi-VN')}: ${l.content}`
+          ).join('\n');
+        } else {
+          serverLogs = '(Không có log nào - Native chưa gọi server)';
+        }
+      } catch {
+        serverLogs = '(Lỗi đọc log server)';
+      }
+
+      // Kiểm tra token trên server
+      let serverTokens = 0;
+      try {
+        const checkRes = await fetch('/api/admin/check-push-tokens');
+        const checkData = await checkRes.json();
+        serverTokens = checkData.tokens || 0;
+      } catch {}
+
+      const status = [
+        '📱 CHẨN ĐOÁN PUSH NOTIFICATION',
+        `Chạy trên native: ${isNative() ? '✅' : '❌'}`,
+        `Token localStorage: ${cachedToken ? '✅ ' + cachedToken.substring(0, 15) + '...' : '❌'}`,
+        `Lỗi Apple: ${nativeError || 'Không có'}`,
+        `Token trên server: ${serverTokens > 0 ? '✅ ' + serverTokens + ' token(s)' : '❌ 0'}`,
+        '',
+        '--- LOG TỪ NATIVE (mới nhất trước) ---',
+        serverLogs,
+      ].join('\n');
+
+      alert(status);
+
+      // Nếu có token, thử gửi test push
+      if (cachedToken || serverTokens > 0) {
         const testRes = await fetch('/api/admin/test-push', { method: 'POST' });
         const testData = await testRes.json().catch(() => ({}));
-        
-        alert([
-          '✅ TOKEN ĐÃ CÓ!',
-          `Token: ${cachedToken.substring(0, 20)}...`,
-          '',
-          `Test push: ${testData.sent ? '✅ Đã gửi!' : '❌ ' + (testData.error || 'Lỗi')}`,
-          testData.sent ? 'Bạn sẽ nhận được thông báo ngay!' : '',
-        ].join('\n'));
-      } else if (nativeError) {
-        // Native gửi lỗi
-        alert([
-          '❌ APPLE TỪ CHỐI CẤP TOKEN',
-          '',
-          `Lỗi từ Apple: ${nativeError}`,
-          '',
-          'Nguyên nhân thường gặp:',
-          '1. Push chưa bật trong Apple Developer Portal',
-          '2. Provisioning Profile chưa đúng',
-          '3. Entitlements không khớp',
-        ].join('\n'));
-      } else {
-        // Kiểm tra server xem token đã được gửi trực tiếp chưa
-        try {
-          const checkRes = await fetch('/api/admin/check-push-tokens');
-          const checkData = await checkRes.json().catch(() => ({}));
-          
-          if (checkData.tokens && checkData.tokens > 0) {
-            alert([
-              '✅ TOKEN ĐÃ ĐƯỢC GỬI TRỰC TIẾP TỪ NATIVE!',
-              '',
-              `Số token trên server: ${checkData.tokens}`,
-              '',
-              'Token chưa lưu vào localStorage nhưng server ĐÃ CÓ.',
-              'Push notification sẽ hoạt động bình thường!',
-            ].join('\n'));
-          } else {
-            alert([
-              '❌ CHƯA CÓ TOKEN',
-              '',
-              'Không có trong localStorage.',
-              'Không có lỗi từ Apple.',
-              'Không có trên server.',
-              '',
-              'Có thể do:',
-              '1. App chưa được cập nhật mới nhất từ TestFlight',
-              '2. Cần XÓA app và CÀI LẠI từ TestFlight',
-              '3. iOS chặn push (Cài đặt → Thông báo → Yuri Spa)',
-            ].join('\n'));
-          }
-        } catch {
-          alert('❌ CHƯA CÓ TOKEN\n\nKhông kiểm tra được server.\nThử tắt app và mở lại.');
-        }
+        alert(`Test push: ${testData.sent ? '✅ Đã gửi!' : '❌ ' + (testData.error || 'Lỗi')}`);
       }
     } catch (e: any) {
       alert('Lỗi: ' + e.message);

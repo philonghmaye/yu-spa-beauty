@@ -6,112 +6,120 @@ import UserNotifications
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    
-    // Lưu token để retry
-    private var pendingToken: String?
+    private let serverBase = "https://yuri-spa-beauty.vercel.app"
+    private let bundleId = "com.yurispa.beauty"
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         UNUserNotificationCenter.current().delegate = self
         
-        // Xin quyền thông báo rồi đăng ký push
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
-            guard granted else { return }
-            DispatchQueue.main.async {
-                application.registerForRemoteNotifications()
-            }
+        // LOG: App started
+        sendDebugLog("APP_LAUNCHED", data: "iOS \(UIDevice.current.systemVersion), model \(UIDevice.current.model)")
+        
+        // Bước 1: Gọi registerForRemoteNotifications NGAY LẬP TỨC (không chờ gì)
+        sendDebugLog("REGISTER_CALLED", data: "Calling registerForRemoteNotifications now")
+        application.registerForRemoteNotifications()
+        
+        // Bước 2: Cũng xin quyền hiển thị notification (song song)
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+            self.sendDebugLog("AUTH_RESULT", data: "granted=\(granted), error=\(error?.localizedDescription ?? "none")")
+        }
+        
+        // Bước 3: Kiểm tra trạng thái notification settings
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            self.sendDebugLog("SETTINGS", data: "authStatus=\(settings.authorizationStatus.rawValue), alertSetting=\(settings.alertSetting.rawValue)")
         }
         
         return true
     }
 
-    // ====== PUSH TOKEN RECEIVED ======
+    // ====== TOKEN NHẬN ĐƯỢC ======
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        print("[PUSH] Token received: \(tokenString.prefix(20))...")
         
-        // Lưu vào UserDefaults
+        sendDebugLog("TOKEN_RECEIVED", data: tokenString)
+        
+        // Lưu UserDefaults
         UserDefaults.standard.set(tokenString, forKey: "apns_device_token")
-        UserDefaults.standard.removeObject(forKey: "apns_error")
         
-        // Forward to Capacitor plugin
-        NotificationCenter.default.post(
-            name: .capacitorDidRegisterForRemoteNotifications,
-            object: deviceToken
-        )
+        // Forward to Capacitor
+        NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
         
-        // GỌI TRỰC TIẾP API VERCEL (không cần WebView)
+        // Gửi token lên server
         sendTokenToServer(tokenString)
         
-        // Inject vào WebView (backup)
-        pendingToken = tokenString
+        // Inject vào WebView
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
             self.injectTokenToWebView(tokenString)
         }
     }
 
-    // ====== PUSH REGISTRATION FAILED ======
+    // ====== ĐĂNG KÝ THẤT BẠI ======
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        let errorMsg = error.localizedDescription
-        print("[PUSH] Registration FAILED: \(errorMsg)")
+        let nsError = error as NSError
+        let errorDetail = "domain=\(nsError.domain), code=\(nsError.code), msg=\(nsError.localizedDescription)"
         
-        UserDefaults.standard.set(errorMsg, forKey: "apns_error")
+        sendDebugLog("REGISTER_FAILED", data: errorDetail)
         
-        NotificationCenter.default.post(
-            name: .capacitorDidFailToRegisterForRemoteNotifications,
-            object: error
-        )
+        UserDefaults.standard.set(errorDetail, forKey: "apns_error")
         
-        // Inject error vào WebView để debug button có thể đọc
+        NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
+        
+        // Inject error vào WebView
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-            self.injectErrorToWebView(errorMsg)
+            self.injectErrorToWebView(nsError.localizedDescription)
         }
     }
     
-    // ====== GỌI TRỰC TIẾP API VERCEL BẰNG URLSESSION ======
-    private func sendTokenToServer(_ token: String) {
-        let urlString = "https://yuri-spa-beauty.vercel.app/api/push-token-native"
-        guard let url = URL(string: urlString) else { return }
+    // ====== GHI LOG LÊN SERVER ======
+    private func sendDebugLog(_ event: String, data: String) {
+        print("[PUSH-DEBUG] \(event): \(data)")
         
+        guard let url = URL(string: "\(serverBase)/api/push-debug-log") else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 10
         
-        let body: [String: String] = [
-            "token": token,
-            "bundleId": Bundle.main.bundleIdentifier ?? "com.yurispa.beauty",
-            "platform": "ios"
-        ]
-        
+        let body: [String: String] = ["event": event, "data": data, "bundleId": bundleId]
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        URLSession.shared.dataTask(with: request) { _, response, error in
             if let error = error {
-                print("[PUSH] Server error: \(error.localizedDescription)")
-                // Retry sau 10 giây
-                DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
-                    self.sendTokenToServer(token)
-                }
-                return
-            }
-            
-            if let httpResponse = response as? HTTPURLResponse {
-                print("[PUSH] Server responded: \(httpResponse.statusCode)")
-                if let data = data, let body = String(data: data, encoding: .utf8) {
-                    print("[PUSH] Server body: \(body)")
-                }
-                
-                if httpResponse.statusCode == 200 {
-                    UserDefaults.standard.set(true, forKey: "apns_token_sent")
-                }
+                print("[PUSH-DEBUG] Log send failed: \(error.localizedDescription)")
+            } else if let http = response as? HTTPURLResponse {
+                print("[PUSH-DEBUG] Log sent: \(http.statusCode)")
             }
         }.resume()
     }
     
-    // ====== INJECT TOKEN VÀO WEBVIEW (BACKUP) ======
+    // ====== GỬI TOKEN LÊN SERVER ======
+    private func sendTokenToServer(_ token: String) {
+        guard let url = URL(string: "\(serverBase)/api/push-token-native") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: String] = ["token": token, "bundleId": bundleId, "platform": "ios"]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                self.sendDebugLog("TOKEN_SEND_FAILED", data: error.localizedDescription)
+                // Retry
+                DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
+                    self.sendTokenToServer(token)
+                }
+            } else if let http = response as? HTTPURLResponse {
+                self.sendDebugLog("TOKEN_SEND_OK", data: "status=\(http.statusCode)")
+            }
+        }.resume()
+    }
+    
+    // ====== INJECT VÀO WEBVIEW ======
     private func injectTokenToWebView(_ token: String) {
         guard let vc = window?.rootViewController as? CAPBridgeViewController,
               let webView = vc.bridge?.webView else {
-            // Retry sau 3 giây
+            sendDebugLog("WEBVIEW_NOT_READY", data: "retrying in 3s")
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                 self.injectTokenToWebView(token)
             }
@@ -121,32 +129,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let js = "localStorage.setItem('cached_push_token','\(token)');"
         webView.evaluateJavaScript(js) { _, error in
             if let error = error {
-                print("[PUSH] WebView inject failed: \(error)")
+                self.sendDebugLog("WEBVIEW_INJECT_FAIL", data: "\(error)")
             } else {
-                print("[PUSH] WebView inject OK")
+                self.sendDebugLog("WEBVIEW_INJECT_OK", data: "token saved to localStorage")
             }
         }
     }
     
-    // ====== INJECT ERROR VÀO WEBVIEW ======
     private func injectErrorToWebView(_ error: String) {
         guard let vc = window?.rootViewController as? CAPBridgeViewController,
               let webView = vc.bridge?.webView else { return }
-        
         let safeError = error.replacingOccurrences(of: "'", with: "\\'")
-        let js = "localStorage.setItem('apns_native_error','\(safeError)');"
-        webView.evaluateJavaScript(js, completionHandler: nil)
+        webView.evaluateJavaScript("localStorage.setItem('apns_native_error','\(safeError)');", completionHandler: nil)
     }
 
-    // ====== STANDARD DELEGATE METHODS ======
-    
+    // ====== STANDARD DELEGATES ======
     func applicationDidBecomeActive(_ application: UIApplication) {
-        // Retry token injection khi app quay lại foreground
-        if let token = pendingToken ?? UserDefaults.standard.string(forKey: "apns_device_token") {
+        if let token = UserDefaults.standard.string(forKey: "apns_device_token") {
             injectTokenToWebView(token)
         }
     }
-
     func applicationDidEnterBackground(_ application: UIApplication) {}
     func applicationWillEnterForeground(_ application: UIApplication) {}
     func applicationWillTerminate(_ application: UIApplication) {}
@@ -154,7 +156,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
-
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
