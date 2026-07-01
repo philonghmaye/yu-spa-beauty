@@ -1,0 +1,6 @@
+platforms:
+  ios:
+    targets:
+      App:
+        entitlements:
+          - aps-environment: development

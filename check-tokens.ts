@@ -1,0 +1,1 @@
+import prisma from './src/lib/prisma'; async function main() { const tokens = await prisma.pushToken.findMany(); console.log('Tokens:', tokens); } main().catch(console.error).finally(() => prisma.$disconnect());

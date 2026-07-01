@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { resetPassword } from '@/actions/auth';
+import { retrySavePushToken } from '@/lib/native';
 
 export default function MobileLoginPage() {
   const router = useRouter();
@@ -25,6 +26,8 @@ export default function MobileLoginPage() {
       toast.error('Sai thông tin đăng nhập');
     } else {
       toast.success('Đăng nhập thành công');
+      // Gửi lại push token lên server (bây giờ đã đăng nhập)
+      retrySavePushToken();
       // Check if user is admin
       try {
         const res = await fetch('/api/auth/role');
