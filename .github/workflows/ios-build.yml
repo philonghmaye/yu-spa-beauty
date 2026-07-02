@@ -99,6 +99,8 @@ jobs:
           cp ios/App/App/AppDelegate.swift /tmp/AppDelegate.swift.bak
           cp ios/App/App/App.entitlements /tmp/App.entitlements.bak
           cp ios/App/App/Info.plist /tmp/Info.plist.bak
+          cp ios/App/App/PushDiagPlugin.swift /tmp/PushDiagPlugin.swift.bak 2>/dev/null || true
+          cp ios/App/App/capacitor.config.json /tmp/capacitor.config.json.bak
 
       - name: Build web & sync Capacitor
         run: |
@@ -133,7 +135,16 @@ jobs:
             echo "✅ Restored original Info.plist"
           fi
           
-          echo ""
+          # Restore PushDiagPlugin.swift (cap sync doesn't know about this file)
+          if [ -f /tmp/PushDiagPlugin.swift.bak ]; then
+            cp /tmp/PushDiagPlugin.swift.bak ios/App/App/PushDiagPlugin.swift
+            echo "✅ Restored PushDiagPlugin.swift"
+          fi
+          
+          # Restore capacitor.config.json (cap sync overwrites this)
+          cp /tmp/capacitor.config.json.bak ios/App/App/capacitor.config.json
+          echo "✅ Restored capacitor.config.json with PushDiagPlugin"
+          
           echo "=== UIBackgroundModes in FINAL Info.plist ==="
           grep -A5 "UIBackgroundModes" ios/App/App/Info.plist || echo "UIBackgroundModes MISSING!"
           echo ""

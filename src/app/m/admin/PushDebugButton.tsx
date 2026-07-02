@@ -35,17 +35,18 @@ export default function PushDebugButton() {
       const { PushNotifications } = await import('@capacitor/push-notifications');
       const { Capacitor } = await import('@capacitor/core');
       
-      // Step 0: Read native logs injected by AppDelegate
-      const nativeLogs = localStorage.getItem('native_push_logs');
-      const nativeOK = (window as any).__NATIVE_OK;
-      if (nativeLogs) {
-        results.push('\n🔧 NATIVE LOG (từ AppDelegate):');
-        nativeLogs.split('|').forEach(l => results.push(l));
-      } else if (nativeOK) {
-        results.push('\n🔧 Native OK flag set but no logs');
-      } else {
-        results.push('\n⚠️ Không có native log - AppDelegate chưa inject');
-        results.push('(Mở app đợi 10s trước khi bấm nút này)');
+      // Step 0: Call NATIVE diagnostic plugin directly
+      try {
+        const diag = await (Capacitor as any).Plugins.PushDiag.diagnose();
+        results.push('\n🔧 NATIVE DIAG (trực tiếp từ iOS):');
+        results.push(`isRegisteredBefore: ${diag.isRegisteredBefore}`);
+        results.push(`isRegisteredAfter: ${diag.isRegisteredAfter}`);
+        results.push(`authStatus: ${diag.authorizationStatus}`);
+        results.push(`bundleId: ${diag.bundleId}`);
+        results.push(`apsEnv: ${diag.apsEnvironment}`);
+        results.push(`pluginLoaded: ${diag.pluginLoaded}`);
+      } catch (e: any) {
+        results.push(`\n⚠️ Native plugin error: ${e.message || e}`);
       }
       
       // Step 1: Check permissions
