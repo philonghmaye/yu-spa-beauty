@@ -137,8 +137,23 @@ jobs:
           echo "=== UIBackgroundModes in FINAL Info.plist ==="
           grep -A5 "UIBackgroundModes" ios/App/App/Info.plist || echo "UIBackgroundModes MISSING!"
           echo ""
-          echo "=== AppDelegate.swift FINAL (first 30 lines) ==="
-          head -30 ios/App/App/AppDelegate.swift
+          echo "=== CRITICAL: Check for UIApplicationSceneManifest ==="
+          grep -c "UIApplicationSceneManifest" ios/App/App/Info.plist && echo "⚠️ SCENE MANIFEST FOUND - THIS BREAKS AppDelegate!" || echo "✅ No SceneManifest"
+          echo ""
+          echo "=== FULL Info.plist (check for scene config) ==="
+          cat ios/App/App/Info.plist
+          echo ""
+          echo "=== AppDelegate.swift FULL CONTENT ==="
+          cat ios/App/App/AppDelegate.swift
+          echo ""
+          echo "=== Check for SceneDelegate files ==="
+          find ios/App -name "*SceneDelegate*" -o -name "*Scene*" | head -10 || echo "No scene files"
+          echo ""
+          echo "=== Check ALL .swift files in project ==="
+          find ios/App/App -name "*.swift" -type f
+          echo ""
+          echo "=== Check main.swift ==="
+          find ios/App -name "main.swift" -type f || echo "No main.swift"
 
       - name: Install CocoaPods
         run: |
@@ -194,13 +209,22 @@ jobs:
           strings $BINARY | grep -i "AppDelegate TEST" && echo "✅ FOUND: AppDelegate TEST" || echo "❌ NOT FOUND: AppDelegate TEST"
           strings $BINARY | grep -i "REGISTER_NOW" && echo "✅ FOUND: REGISTER_NOW" || echo "❌ NOT FOUND: REGISTER_NOW"
           strings $BINARY | grep -i "registerForRemoteNotifications" && echo "✅ FOUND: registerForRemoteNotifications" || echo "❌ NOT FOUND: registerForRemoteNotifications"
-          strings $BINARY | grep -i "TOKEN_OK" && echo "✅ FOUND: TOKEN_OK" || echo "❌ NOT FOUND: TOKEN_OK"
-          strings $BINARY | grep -i "TOKEN_FAIL" && echo "✅ FOUND: TOKEN_FAIL" || echo "❌ NOT FOUND: TOKEN_FAIL"
-          strings $BINARY | grep -i "PUSH-NATIVE" && echo "✅ FOUND: PUSH-NATIVE" || echo "❌ NOT FOUND: PUSH-NATIVE"
-          strings $BINARY | grep -i "Build 16" && echo "✅ FOUND: Build 16 reference" || echo "❌ NOT FOUND: Build 16 reference"
+          strings $BINARY | grep -i "NATIVE BUILD" && echo "✅ FOUND: NATIVE BUILD" || echo "❌ NOT FOUND: NATIVE BUILD"
+          strings $BINARY | grep -i "appdelegate_did_launch" && echo "✅ FOUND: appdelegate_did_launch key" || echo "❌ NOT FOUND: appdelegate_did_launch"
+          strings $BINARY | grep -i "diagnosticWindow" && echo "✅ FOUND: diagnosticWindow" || echo "❌ NOT FOUND: diagnosticWindow"
           echo ""
-          echo "=== ALL Swift/Capacitor related strings ==="
-          strings $BINARY | grep -iE "(push|notif|register|token|delegate)" | head -30
+          echo "=== ALL AppDelegate/Scene classes in binary ==="
+          strings $BINARY | grep -iE "(AppDelegate|SceneDelegate|Scene|_TtC)" | head -20
+          echo ""
+          echo "=== Check for didFinishLaunching in binary ==="
+          strings $BINARY | grep -i "didFinishLaunching" | head -10
+          echo ""
+          echo "=== Check Info.plist in archive for SceneManifest ==="
+          ARCHIVED_PLIST="$RUNNER_TEMP/App.xcarchive/Products/Applications/App.app/Info.plist"
+          plutil -p "$ARCHIVED_PLIST" | grep -i "scene" && echo "⚠️ SCENE CONFIG IN ARCHIVED PLIST!" || echo "✅ No scene config in archived plist"
+          echo ""
+          echo "=== Full archived Info.plist ==="
+          plutil -p "$ARCHIVED_PLIST"
 
       - name: Export IPA
         env:
