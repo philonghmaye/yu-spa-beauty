@@ -27,7 +27,7 @@ export default async function StaffDetailPage({ params }: { params: Promise<{ id
             {staff.name.charAt(0)}
           </div>
           <div className="m-staff-hero-overlay">
-            <Link href="/m/kham-pha" style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+            <Link href="/m" style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
               <FiArrowLeft />
             </Link>
           </div>

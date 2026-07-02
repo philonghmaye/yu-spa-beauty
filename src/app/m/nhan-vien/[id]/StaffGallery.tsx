@@ -80,7 +80,7 @@ export default function StaffGallery({ images, name }: { images: string[]; name:
 
       {/* Navigation overlay */}
       <div className="m-staff-hero-overlay">
-        <Link href="/m/kham-pha" style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', textDecoration: 'none' }}>
+        <Link href="/m" style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', textDecoration: 'none' }}>
           <FiArrowLeft />
         </Link>
         <div style={{ display: 'flex', gap: 8 }}>
