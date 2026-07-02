@@ -14,7 +14,18 @@ import { Capacitor } from '@capacitor/core';
 export const isNative = () => Capacitor.isNativePlatform();
 export const getPlatform = () => Capacitor.getPlatform(); // 'ios' | 'android' | 'web'
 
-// ==================== PUSH NOTIFICATIONS ====================
+/**
+ * Ghi log chẩn đoán lên server (hoạt động cả khi console.log không thấy được)
+ */
+async function pushDebugLog(event: string, data: string) {
+  try {
+    await fetch('/api/push-debug-log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event, data, bundleId: 'com.yurispa.beauty' }),
+    });
+  } catch {}
+}
 
 // Flag để tránh gắn listener trùng
 let pushListenersAttached = false;
@@ -27,53 +38,68 @@ let pushListenersAttached = false;
 export async function initPushNotifications() {
   if (!isNative()) return;
 
-  const { PushNotifications } = await import('@capacitor/push-notifications');
+  await pushDebugLog('JS_INIT_START', `platform=${getPlatform()}`);
 
-  // Xin quyền
-  const permission = await PushNotifications.requestPermissions();
-  if (permission.receive !== 'granted') {
-    console.log('Push notification permission denied');
-    return;
+  try {
+    const { PushNotifications } = await import('@capacitor/push-notifications');
+    await pushDebugLog('JS_PLUGIN_LOADED', 'OK');
+
+    // Xin quyền
+    const permission = await PushNotifications.requestPermissions();
+    await pushDebugLog('JS_PERMISSION', `receive=${permission.receive}`);
+    
+    if (permission.receive !== 'granted') {
+      await pushDebugLog('JS_PERMISSION_DENIED', 'User denied');
+      return;
+    }
+
+    // Gắn listener TRƯỚC khi gọi register (quan trọng!)
+    if (!pushListenersAttached) {
+      // Lắng nghe token - LƯU NGAY VÀO LOCALSTORAGE
+      PushNotifications.addListener('registration', async (token) => {
+        await pushDebugLog('JS_TOKEN_RECEIVED', token.value.substring(0, 20) + '...');
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('cached_push_token', token.value);
+        }
+        savePushTokenToServer(token.value);
+      });
+
+      // Lắng nghe lỗi
+      PushNotifications.addListener('registrationError', async (error) => {
+        await pushDebugLog('JS_REGISTER_ERROR', JSON.stringify(error));
+      });
+
+      // Lắng nghe notification khi app đang mở
+      PushNotifications.addListener('pushNotificationReceived', (notification) => {
+        console.log('Push received:', notification);
+      });
+
+      // Lắng nghe khi user tap vào notification
+      PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+        const data = action.notification.data;
+        if (data?.appointmentId) {
+          window.location.href = '/m/hoat-dong';
+        }
+      });
+
+      pushListenersAttached = true;
+      await pushDebugLog('JS_LISTENERS_ATTACHED', 'OK');
+    }
+
+    // Đăng ký nhận push (listeners đã sẵn sàng ở trên)
+    await pushDebugLog('JS_REGISTER_CALLING', 'About to call PushNotifications.register()');
+    await PushNotifications.register();
+    await pushDebugLog('JS_REGISTER_CALLED', 'register() returned successfully');
+
+    // Đợi 15 giây rồi kiểm tra kết quả
+    setTimeout(async () => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('cached_push_token') : null;
+      await pushDebugLog('JS_CHECK_AFTER_15S', token ? `TOKEN_OK: ${token.substring(0, 20)}...` : 'NO_TOKEN');
+    }, 15000);
+
+  } catch (error: any) {
+    await pushDebugLog('JS_INIT_ERROR', error.message || String(error));
   }
-
-  // Gắn listener TRƯỚC khi gọi register (quan trọng!)
-  if (!pushListenersAttached) {
-    // Lắng nghe token - LƯU NGAY VÀO LOCALSTORAGE
-    PushNotifications.addListener('registration', (token) => {
-      console.log('Push token received:', token.value.substring(0, 15) + '...');
-      // Lưu localStorage ngay lập tức (không phụ thuộc server)
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('cached_push_token', token.value);
-      }
-      // Cố gắng gửi lên server (có thể fail nếu chưa đăng nhập)
-      savePushTokenToServer(token.value);
-    });
-
-    // Lắng nghe lỗi
-    PushNotifications.addListener('registrationError', (error) => {
-      console.error('Push registration error:', JSON.stringify(error));
-    });
-
-    // Lắng nghe notification khi app đang mở
-    PushNotifications.addListener('pushNotificationReceived', (notification) => {
-      console.log('Push received:', notification);
-    });
-
-    // Lắng nghe khi user tap vào notification
-    PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-      console.log('Push action:', action);
-      // Navigate đến trang phù hợp
-      const data = action.notification.data;
-      if (data?.appointmentId) {
-        window.location.href = '/m/hoat-dong';
-      }
-    });
-
-    pushListenersAttached = true;
-  }
-
-  // Đăng ký nhận push (listeners đã sẵn sàng ở trên)
-  await PushNotifications.register();
 }
 
 /**
