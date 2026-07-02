@@ -6,46 +6,46 @@ import UserNotifications
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    private var diagnosticWindow: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        
+        // Save marker to prove this method ran
+        UserDefaults.standard.set("YES_BUILD19_\(Date())", forKey: "appdelegate_did_launch")
         
         // Register for push IMMEDIATELY
         application.registerForRemoteNotifications()
         
-        // Show native alert after 6 seconds (window will be ready)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 6.0) {
+        // Show diagnostic alert after 6 seconds using SEPARATE WINDOW
+        DispatchQueue.main.asyncAfter(deadline: .now() + 6.0) { [weak self] in
             let isReg = application.isRegisteredForRemoteNotifications
             let token = UserDefaults.standard.string(forKey: "apns_token_native") ?? "CHƯA CÓ"
             let error = UserDefaults.standard.string(forKey: "apns_error_native") ?? "không"
+            let launched = UserDefaults.standard.string(forKey: "appdelegate_did_launch") ?? "NO"
+            let windowInfo = "self.window=\(self?.window != nil), rootVC=\(self?.window?.rootViewController != nil)"
             
             let msg = """
-            ✅ AppDelegate code ĐANG CHẠY!
-            
+            didLaunch: \(launched.prefix(40))
             isRegistered: \(isReg)
             Token: \(token.prefix(30))
             Error: \(error)
-            
-            (Build 18)
+            Window: \(windowInfo)
             """
             
-            let alert = UIAlertController(title: "🔧 NATIVE DIAGNOSTIC", message: msg, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            self.window?.rootViewController?.present(alert, animated: true)
-        }
-        
-        // Check again at 20s with more info
-        DispatchQueue.main.asyncAfter(deadline: .now() + 20.0) {
-            let isReg = application.isRegisteredForRemoteNotifications
-            let token = UserDefaults.standard.string(forKey: "apns_token_native") ?? "CHƯA CÓ"
-            let error = UserDefaults.standard.string(forKey: "apns_error_native") ?? "không"
+            // Create SEPARATE window for alert - doesn't depend on Capacitor
+            let alertWindow = UIWindow(frame: UIScreen.main.bounds)
+            let vc = UIViewController()
+            alertWindow.rootViewController = vc
+            alertWindow.windowLevel = .alert + 1
+            alertWindow.makeKeyAndVisible()
+            self?.diagnosticWindow = alertWindow // Keep reference
             
-            // Inject into WebView
-            if let vc = self.window?.rootViewController as? CAPBridgeViewController,
-               let webView = vc.bridge?.webView {
-                let log = "isRegistered=\(isReg)|token=\(token.prefix(30))|error=\(error)"
-                let safe = log.replacingOccurrences(of: "'", with: "\\'")
-                webView.evaluateJavaScript("localStorage.setItem('native_push_logs', '\(safe)');", completionHandler: nil)
-            }
+            let alert = UIAlertController(title: "🔧 NATIVE BUILD 19", message: msg, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                self?.diagnosticWindow?.isHidden = true
+                self?.diagnosticWindow = nil
+            })
+            vc.present(alert, animated: true)
         }
 
         return true
@@ -53,23 +53,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        
-        // Save to UserDefaults FIRST
         UserDefaults.standard.set(token, forKey: "apns_token_native")
         UserDefaults.standard.removeObject(forKey: "apns_error_native")
-        
-        // Forward to Capacitor
         NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         let e = error as NSError
-        
-        // Save error to UserDefaults
         UserDefaults.standard.set("[\(e.domain)] code=\(e.code): \(e.localizedDescription)", forKey: "apns_error_native")
         UserDefaults.standard.removeObject(forKey: "apns_token_native")
-        
-        // Forward to Capacitor
         NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
     }
 
