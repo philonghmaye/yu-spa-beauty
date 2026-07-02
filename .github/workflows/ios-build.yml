@@ -49,6 +49,20 @@ jobs:
           PP_NAME=$(/usr/libexec/PlistBuddy -c "Print Name" /dev/stdin <<< $(security cms -D -i $PP_PATH))
           echo "Profile UUID: $PP_UUID"
           echo "Profile Name: $PP_NAME"
+          
+          # DIAGNOSTIC: Show full profile details
+          echo "=== PROVISIONING PROFILE DETAILS ==="
+          PP_DECODED=$(security cms -D -i $PP_PATH)
+          echo "App ID: $(/usr/libexec/PlistBuddy -c "Print Entitlements:application-identifier" /dev/stdin <<< $PP_DECODED)"
+          echo "APS Environment: $(/usr/libexec/PlistBuddy -c "Print Entitlements:aps-environment" /dev/stdin <<< $PP_DECODED || echo 'NOT FOUND!')"
+          echo "Team ID: $(/usr/libexec/PlistBuddy -c "Print TeamIdentifier:0" /dev/stdin <<< $PP_DECODED)"
+          echo "App ID Name: $(/usr/libexec/PlistBuddy -c "Print AppIDName" /dev/stdin <<< $PP_DECODED)"
+          echo "Creation Date: $(/usr/libexec/PlistBuddy -c "Print CreationDate" /dev/stdin <<< $PP_DECODED)"
+          echo "Expiration Date: $(/usr/libexec/PlistBuddy -c "Print ExpirationDate" /dev/stdin <<< $PP_DECODED)"
+          echo "Platform: $(/usr/libexec/PlistBuddy -c "Print Platform:0" /dev/stdin <<< $PP_DECODED || echo 'N/A')"
+          echo "Profile Type: $(/usr/libexec/PlistBuddy -c "Print ProvisionsAllDevices" /dev/stdin <<< $PP_DECODED 2>/dev/null && echo 'App Store / Enterprise' || echo 'Development / Ad Hoc')"
+          echo "=== END PROFILE DETAILS ==="
+          
           echo "PP_UUID=$PP_UUID" >> $GITHUB_ENV
           echo "PP_NAME=$PP_NAME" >> $GITHUB_ENV
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
