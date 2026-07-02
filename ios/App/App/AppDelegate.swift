@@ -6,34 +6,44 @@ import UserNotifications
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    private var nativeLogs: [String] = []
+    
+    private func addLog(_ msg: String) {
+        let time = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
+        let entry = "[\(time)] \(msg)"
+        nativeLogs.append(entry)
+        print("[PUSH-NATIVE] \(entry)")
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        // Log to server
-        Self.log("APP_START", "iOS \(UIDevice.current.systemVersion)")
+        addLog("APP_START iOS \(UIDevice.current.systemVersion)")
         
-        // Call register IMMEDIATELY - permission was already granted before
-        Self.log("REGISTER_NOW", "calling registerForRemoteNotifications synchronously")
+        // Call register IMMEDIATELY
+        addLog("REGISTER_NOW calling registerForRemoteNotifications")
         application.registerForRemoteNotifications()
+        addLog("REGISTER_CALLED done")
         
-        // Check status after delays
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+        // Check status after delays and inject into WebView
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
             let status = application.isRegisteredForRemoteNotifications
-            Self.log("CHECK_5S", "isRegistered=\(status)")
+            self.addLog("CHECK_3S isRegistered=\(status)")
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 15.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) {
             let status = application.isRegisteredForRemoteNotifications
-            Self.log("CHECK_15S", "isRegistered=\(status)")
+            self.addLog("CHECK_8S isRegistered=\(status)")
+            // Inject all logs into WebView
+            self.injectLogsToWebView()
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 30.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 20.0) {
             let status = application.isRegisteredForRemoteNotifications
-            Self.log("CHECK_30S", "isRegistered=\(status)")
+            self.addLog("CHECK_20S isRegistered=\(status)")
             
-            // Also check notification settings
             UNUserNotificationCenter.current().getNotificationSettings { settings in
-                Self.log("SETTINGS_30S", "auth=\(settings.authorizationStatus.rawValue) alert=\(settings.alertSetting.rawValue) badge=\(settings.badgeSetting.rawValue) sound=\(settings.soundSetting.rawValue)")
+                self.addLog("SETTINGS auth=\(settings.authorizationStatus.rawValue)")
+                self.injectLogsToWebView()
             }
         }
 
@@ -43,21 +53,48 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // PUSH: Token received
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        Self.log("TOKEN_OK", token)
+        addLog("TOKEN_OK \(token.prefix(30))")
         
         // Forward to Capacitor
         NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
         
-        // Also save token directly to server
-        Self.sendToken(token)
+        // Save to UserDefaults
+        UserDefaults.standard.set(token, forKey: "apns_token_native")
+        
+        // Inject into WebView
+        injectLogsToWebView()
     }
 
     // PUSH: Registration failed
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         let e = error as NSError
-        Self.log("TOKEN_FAIL", "domain=\(e.domain) code=\(e.code) msg=\(e.localizedDescription)")
+        addLog("TOKEN_FAIL domain=\(e.domain) code=\(e.code) msg=\(e.localizedDescription)")
         
         NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
+        
+        UserDefaults.standard.set(e.localizedDescription, forKey: "apns_error_native")
+        
+        injectLogsToWebView()
+    }
+    
+    // Inject native logs into WebView localStorage
+    private func injectLogsToWebView() {
+        DispatchQueue.main.async {
+            guard let vc = self.window?.rootViewController as? CAPBridgeViewController,
+                  let webView = vc.bridge?.webView else {
+                self.addLog("WEBVIEW_NOT_READY")
+                return
+            }
+            
+            let logsStr = self.nativeLogs.joined(separator: "\\n")
+            let escapedLogs = logsStr.replacingOccurrences(of: "'", with: "\\'")
+            let js = "localStorage.setItem('native_push_logs', '\(escapedLogs)');"
+            webView.evaluateJavaScript(js) { _, error in
+                if let error = error {
+                    print("[PUSH-NATIVE] inject error: \(error)")
+                }
+            }
+        }
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
@@ -66,28 +103,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
-    }
-    
-    // === NATIVE SERVER LOGGING ===
-    static func log(_ event: String, _ data: String) {
-        print("[PUSH] \(event): \(data)")
-        guard let url = URL(string: "https://yuri-spa-beauty.vercel.app/api/push-debug-log") else { return }
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.timeoutInterval = 10
-        let body: [String: String] = ["event": event, "data": data, "bundleId": "com.yurispa.beauty"]
-        req.httpBody = try? JSONSerialization.data(withJSONObject: body)
-        URLSession.shared.dataTask(with: req).resume()
-    }
-    
-    static func sendToken(_ token: String) {
-        guard let url = URL(string: "https://yuri-spa-beauty.vercel.app/api/push-token-native") else { return }
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body: [String: String] = ["token": token, "bundleId": "com.yurispa.beauty", "platform": "ios"]
-        req.httpBody = try? JSONSerialization.data(withJSONObject: body)
-        URLSession.shared.dataTask(with: req).resume()
     }
 }

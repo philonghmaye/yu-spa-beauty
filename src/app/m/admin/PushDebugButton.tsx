@@ -35,6 +35,15 @@ export default function PushDebugButton() {
       const { PushNotifications } = await import('@capacitor/push-notifications');
       const { Capacitor } = await import('@capacitor/core');
       
+      // Step 0: Read native logs injected by AppDelegate
+      const nativeLogs = localStorage.getItem('native_push_logs');
+      if (nativeLogs) {
+        results.push('\n🔧 NATIVE LOG (từ AppDelegate):');
+        nativeLogs.split('\\n').forEach(l => results.push(l));
+      } else {
+        results.push('\n⚠️ Không có native log - AppDelegate chưa inject');
+      }
+      
       // Step 1: Check permissions
       const perms = await PushNotifications.checkPermissions();
       results.push(`\nQuyền: ${perms.receive}`);
