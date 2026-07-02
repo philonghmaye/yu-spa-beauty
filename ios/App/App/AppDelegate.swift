@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import UserNotifications
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -7,37 +8,55 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Request notification permission first
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
-            print("[PUSH] Permission: granted=\(granted), error=\(error?.localizedDescription ?? "none")")
-            if granted {
-                DispatchQueue.main.async {
-                    // Register for remote notifications on main thread
-                    print("[PUSH] Calling registerForRemoteNotifications()")
-                    application.registerForRemoteNotifications()
-                }
+        
+        // Log to server
+        Self.log("APP_START", "iOS \(UIDevice.current.systemVersion)")
+        
+        // Call register IMMEDIATELY - permission was already granted before
+        Self.log("REGISTER_NOW", "calling registerForRemoteNotifications synchronously")
+        application.registerForRemoteNotifications()
+        
+        // Check status after delays
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            let status = application.isRegisteredForRemoteNotifications
+            Self.log("CHECK_5S", "isRegistered=\(status)")
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 15.0) {
+            let status = application.isRegisteredForRemoteNotifications
+            Self.log("CHECK_15S", "isRegistered=\(status)")
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 30.0) {
+            let status = application.isRegisteredForRemoteNotifications
+            Self.log("CHECK_30S", "isRegistered=\(status)")
+            
+            // Also check notification settings
+            UNUserNotificationCenter.current().getNotificationSettings { settings in
+                Self.log("SETTINGS_30S", "auth=\(settings.authorizationStatus.rawValue) alert=\(settings.alertSetting.rawValue) badge=\(settings.badgeSetting.rawValue) sound=\(settings.soundSetting.rawValue)")
             }
         }
-        
-        // Also check after delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
-            let isRegistered = application.isRegisteredForRemoteNotifications
-            print("[PUSH] After 10s: isRegisteredForRemoteNotifications = \(isRegistered)")
-        }
-        
+
         return true
     }
 
-    // PUSH: Token received - forward to Capacitor
+    // PUSH: Token received
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-        print("[PUSH] TOKEN RECEIVED: \(token)")
+        Self.log("TOKEN_OK", token)
+        
+        // Forward to Capacitor
         NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
+        
+        // Also save token directly to server
+        Self.sendToken(token)
     }
 
-    // PUSH: Registration failed - forward to Capacitor
+    // PUSH: Registration failed
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        print("[PUSH] REGISTRATION FAILED: \(error.localizedDescription)")
+        let e = error as NSError
+        Self.log("TOKEN_FAIL", "domain=\(e.domain) code=\(e.code) msg=\(e.localizedDescription)")
+        
         NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
     }
 
@@ -47,5 +66,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
+    }
+    
+    // === NATIVE SERVER LOGGING ===
+    static func log(_ event: String, _ data: String) {
+        print("[PUSH] \(event): \(data)")
+        guard let url = URL(string: "https://yuri-spa-beauty.vercel.app/api/push-debug-log") else { return }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.timeoutInterval = 10
+        let body: [String: String] = ["event": event, "data": data, "bundleId": "com.yurispa.beauty"]
+        req.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        URLSession.shared.dataTask(with: req).resume()
+    }
+    
+    static func sendToken(_ token: String) {
+        guard let url = URL(string: "https://yuri-spa-beauty.vercel.app/api/push-token-native") else { return }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body: [String: String] = ["token": token, "bundleId": "com.yurispa.beauty", "platform": "ios"]
+        req.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        URLSession.shared.dataTask(with: req).resume()
     }
 }
