@@ -82,5 +82,9 @@
 	<string>Yuri Spa cần quyền lưu ảnh vào thư viện của bạn.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

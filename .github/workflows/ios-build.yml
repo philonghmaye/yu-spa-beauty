@@ -79,8 +79,12 @@ jobs:
           echo ""
           echo "=== App.entitlements BEFORE cap sync ==="
           cat ios/App/App/App.entitlements
+          echo ""
+          echo "=== Info.plist UIBackgroundModes ==="
+          grep -A5 "UIBackgroundModes" ios/App/App/Info.plist || echo "UIBackgroundModes NOT FOUND!"
           cp ios/App/App/AppDelegate.swift /tmp/AppDelegate.swift.bak
           cp ios/App/App/App.entitlements /tmp/App.entitlements.bak
+          cp ios/App/App/Info.plist /tmp/Info.plist.bak
 
       - name: Build web & sync Capacitor
         run: |
@@ -107,6 +111,17 @@ jobs:
             echo "✅ Restored original App.entitlements"
           fi
           
+          if diff ios/App/App/Info.plist /tmp/Info.plist.bak > /dev/null 2>&1; then
+            echo "✅ Info.plist was NOT modified by cap sync"
+          else
+            echo "⚠️ Info.plist WAS MODIFIED by cap sync! Restoring..."
+            cp /tmp/Info.plist.bak ios/App/App/Info.plist
+            echo "✅ Restored original Info.plist"
+          fi
+          
+          echo ""
+          echo "=== UIBackgroundModes in FINAL Info.plist ==="
+          grep -A5 "UIBackgroundModes" ios/App/App/Info.plist || echo "UIBackgroundModes MISSING!"
           echo ""
           echo "=== AppDelegate.swift FINAL (first 30 lines) ==="
           head -30 ios/App/App/AppDelegate.swift
