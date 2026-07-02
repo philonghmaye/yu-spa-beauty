@@ -186,6 +186,21 @@ jobs:
           echo ""
           echo "=== Provisioning profile in .app ==="
           security cms -D -i "$RUNNER_TEMP/App.xcarchive/Products/Applications/App.app/embedded.mobileprovision" 2>/dev/null | grep -A3 "aps-environment" || echo "No aps-environment in embedded profile"
+          echo ""
+          echo "=== BINARY STRING CHECK: Is our custom code compiled? ==="
+          BINARY="$RUNNER_TEMP/App.xcarchive/Products/Applications/App.app/App"
+          echo "Binary size: $(wc -c < $BINARY) bytes"
+          echo "Checking for custom strings..."
+          strings $BINARY | grep -i "AppDelegate TEST" && echo "✅ FOUND: AppDelegate TEST" || echo "❌ NOT FOUND: AppDelegate TEST"
+          strings $BINARY | grep -i "REGISTER_NOW" && echo "✅ FOUND: REGISTER_NOW" || echo "❌ NOT FOUND: REGISTER_NOW"
+          strings $BINARY | grep -i "registerForRemoteNotifications" && echo "✅ FOUND: registerForRemoteNotifications" || echo "❌ NOT FOUND: registerForRemoteNotifications"
+          strings $BINARY | grep -i "TOKEN_OK" && echo "✅ FOUND: TOKEN_OK" || echo "❌ NOT FOUND: TOKEN_OK"
+          strings $BINARY | grep -i "TOKEN_FAIL" && echo "✅ FOUND: TOKEN_FAIL" || echo "❌ NOT FOUND: TOKEN_FAIL"
+          strings $BINARY | grep -i "PUSH-NATIVE" && echo "✅ FOUND: PUSH-NATIVE" || echo "❌ NOT FOUND: PUSH-NATIVE"
+          strings $BINARY | grep -i "Build 16" && echo "✅ FOUND: Build 16 reference" || echo "❌ NOT FOUND: Build 16 reference"
+          echo ""
+          echo "=== ALL Swift/Capacitor related strings ==="
+          strings $BINARY | grep -iE "(push|notif|register|token|delegate)" | head -30
 
       - name: Export IPA
         env:
