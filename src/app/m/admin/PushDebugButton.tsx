@@ -94,7 +94,7 @@ export default function PushDebugButton() {
 
       if (registerResult.token) {
         localStorage.setItem('cached_push_token', registerResult.token);
-        results.length = 0;
+
         results.push('✅ THÀNH CÔNG!');
         results.push(`Token: ${registerResult.token.substring(0, 20)}...`);
         
@@ -110,8 +110,7 @@ export default function PushDebugButton() {
         }
       } else {
         await debugLog('V3_FAILED', registerResult.error || 'unknown');
-        results.length = 0;
-        results.push('❌ APPLE KHÔNG TRẢ TOKEN');
+        results.push('\n❌ APPLE KHÔNG TRẢ TOKEN');
         results.push(`\nLỗi: ${registerResult.error}`);
         results.push('\n--- CÒN THỬ ---');
         results.push('1. XÓA app → Cài đặt → General → VPN & Device Management → xóa profile → cài lại từ TestFlight');
