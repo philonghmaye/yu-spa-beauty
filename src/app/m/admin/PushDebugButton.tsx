@@ -37,11 +37,15 @@ export default function PushDebugButton() {
       
       // Step 0: Read native logs injected by AppDelegate
       const nativeLogs = localStorage.getItem('native_push_logs');
+      const nativeOK = (window as any).__NATIVE_OK;
       if (nativeLogs) {
         results.push('\n🔧 NATIVE LOG (từ AppDelegate):');
-        nativeLogs.split('\\n').forEach(l => results.push(l));
+        nativeLogs.split('|').forEach(l => results.push(l));
+      } else if (nativeOK) {
+        results.push('\n🔧 Native OK flag set but no logs');
       } else {
         results.push('\n⚠️ Không có native log - AppDelegate chưa inject');
+        results.push('(Mở app đợi 10s trước khi bấm nút này)');
       }
       
       // Step 1: Check permissions
