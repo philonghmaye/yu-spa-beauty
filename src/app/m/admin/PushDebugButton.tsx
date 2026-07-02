@@ -22,7 +22,7 @@ export default function PushDebugButton() {
       setLoading(true);
       
       const results: string[] = [];
-      results.push('📱 CHẨN ĐOÁN PUSH NOTIFICATION');
+      results.push('📱 CHẨN ĐOÁN PUSH v3');
       results.push(`Native: ${isNative() ? '✅' : '❌'}`);
       results.push(`Platform: ${getPlatform()}`);
       
@@ -33,60 +33,62 @@ export default function PushDebugButton() {
       }
 
       const { PushNotifications } = await import('@capacitor/push-notifications');
+      const { Capacitor } = await import('@capacitor/core');
       
       // Step 1: Check permissions
       const perms = await PushNotifications.checkPermissions();
-      results.push(`\nQuyền hiện tại: ${perms.receive}`);
-      await debugLog('DEBUG_PERM_CHECK', perms.receive);
+      results.push(`\nQuyền: ${perms.receive}`);
+      await debugLog('V3_PERM', perms.receive);
 
       if (perms.receive !== 'granted') {
         const newPerm = await PushNotifications.requestPermissions();
-        results.push(`Xin quyền mới: ${newPerm.receive}`);
-        await debugLog('DEBUG_PERM_REQUEST', newPerm.receive);
+        results.push(`Xin quyền: ${newPerm.receive}`);
         if (newPerm.receive !== 'granted') {
-          results.push('\n❌ Người dùng từ chối quyền thông báo');
+          results.push('\n❌ Từ chối quyền thông báo');
           alert(results.join('\n'));
           return;
         }
       }
 
-      // Step 2: Remove old listeners and re-register
-      await PushNotifications.removeAllListeners();
-      results.push('Đã xóa listeners cũ');
-      await debugLog('DEBUG_LISTENERS_CLEARED', 'OK');
+      // Step 2: Check cached token from native (via localStorage injection)
+      const cachedToken = localStorage.getItem('cached_push_token');
+      const nativeError = localStorage.getItem('apns_native_error');
+      results.push(`\nCached token: ${cachedToken ? cachedToken.substring(0, 16) + '...' : 'KHÔNG CÓ'}`);
+      results.push(`Native error: ${nativeError || 'không'}`);
+      await debugLog('V3_CACHED', `token=${cachedToken ? 'yes' : 'no'}, error=${nativeError || 'none'}`);
 
-      // Step 3: Register with timeout
-      results.push('\n⏳ Đang đăng ký với Apple...');
-      results.push('(Đợi 20 giây)');
+      // Step 3: Remove old listeners, re-register with 30s timeout
+      await PushNotifications.removeAllListeners();
+      results.push('\n⏳ Đang đăng ký (đợi 30 giây)...');
       
       const registerResult = await new Promise<{token: string | null, error: string | null}>((resolve) => {
         const timeout = setTimeout(() => {
-          resolve({ token: null, error: 'TIMEOUT - Apple không phản hồi sau 20 giây' });
-        }, 20000);
+          resolve({ token: null, error: 'TIMEOUT 30s - Apple không phản hồi' });
+        }, 30000);
 
         PushNotifications.addListener('registration', async (token) => {
           clearTimeout(timeout);
-          await debugLog('DEBUG_TOKEN_OK', token.value);
+          await debugLog('V3_TOKEN_OK', token.value.substring(0, 20));
           resolve({ token: token.value, error: null });
         });
 
         PushNotifications.addListener('registrationError', async (err) => {
           clearTimeout(timeout);
-          await debugLog('DEBUG_TOKEN_ERROR', JSON.stringify(err));
-          resolve({ token: null, error: JSON.stringify(err) });
+          const errStr = JSON.stringify(err);
+          await debugLog('V3_TOKEN_ERROR', errStr);
+          resolve({ token: null, error: errStr });
         });
 
         PushNotifications.register();
-        debugLog('DEBUG_REGISTER_CALLED', 'Waiting for Apple response...');
+        debugLog('V3_REGISTER_CALLED', 'waiting...');
       });
 
       if (registerResult.token) {
         localStorage.setItem('cached_push_token', registerResult.token);
-        results.length = 0; // Clear
+        results.length = 0;
         results.push('✅ THÀNH CÔNG!');
         results.push(`Token: ${registerResult.token.substring(0, 20)}...`);
         
-        // Save to server
         try {
           await fetch('/api/push-token', {
             method: 'POST',
@@ -94,24 +96,19 @@ export default function PushDebugButton() {
             body: JSON.stringify({ token: registerResult.token, platform: 'ios' }),
           });
           results.push('Đã lưu server ✅');
-
-          // Test push
-          const testRes = await fetch('/api/admin/test-push', { method: 'POST' });
-          const testData = await testRes.json().catch(() => ({}));
-          results.push(`Test push: ${testData.sent ? '✅ Đã gửi!' : '❌ Lỗi'}`);
         } catch {
           results.push('Lỗi lưu server ❌');
         }
       } else {
-        await debugLog('DEBUG_TIMEOUT', registerResult.error || 'unknown');
+        await debugLog('V3_FAILED', registerResult.error || 'unknown');
         results.length = 0;
         results.push('❌ APPLE KHÔNG TRẢ TOKEN');
         results.push(`\nLỗi: ${registerResult.error}`);
-        results.push('\n--- NGUYÊN NHÂN CÓ THỂ ---');
-        results.push('1. Push chưa bật cho App ID trên Apple Developer Portal');
-        results.push('2. Mạng chặn kết nối tới Apple APNs');
-        results.push('3. Thử KẾT NỐI WIFI KHÁC rồi mở lại app');
-        results.push('4. Kiểm tra: Cài đặt → Thông báo → Yuri Spa');
+        results.push('\n--- CÒN THỬ ---');
+        results.push('1. XÓA app → Cài đặt → General → VPN & Device Management → xóa profile → cài lại từ TestFlight');
+        results.push('2. Kiểm tra: Cài đặt → Thông báo → Yuri Spa → BẬT cho phép');
+        results.push('3. Restart điện thoại');
+        results.push('4. Thử kết nối mạng khác');
       }
       
       // Read server logs
@@ -119,8 +116,8 @@ export default function PushDebugButton() {
         const logRes = await fetch('/api/push-debug-log');
         const logData = await logRes.json();
         if (logData.logs?.length > 0) {
-          results.push('\n--- LOG SERVER (5 mới nhất) ---');
-          logData.logs.slice(0, 5).forEach((l: any) => {
+          results.push('\n--- LOG (3 mới nhất) ---');
+          logData.logs.slice(0, 3).forEach((l: any) => {
             results.push(`${new Date(l.createdAt).toLocaleTimeString('vi-VN')}: ${l.content}`);
           });
         }
@@ -146,7 +143,7 @@ export default function PushDebugButton() {
         marginTop: '10px', cursor: 'pointer'
       }}
     >
-      <FiBell /> {loading ? 'Đang kiểm tra (đợi 20s)...' : 'Chẩn đoán Thông Báo'}
+      <FiBell /> {loading ? 'Đang kiểm tra (30s)...' : 'Chẩn đoán Thông Báo v3'}
     </button>
   );
 }
