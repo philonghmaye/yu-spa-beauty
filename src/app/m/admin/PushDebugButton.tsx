@@ -33,11 +33,12 @@ export default function PushDebugButton() {
       }
 
       const { PushNotifications } = await import('@capacitor/push-notifications');
-      const { Capacitor } = await import('@capacitor/core');
+      const { Capacitor, registerPlugin } = await import('@capacitor/core');
       
       // Step 0: Call NATIVE diagnostic plugin directly
       try {
-        const diag = await (Capacitor as any).Plugins.PushDiag.diagnose();
+        const PushDiag = registerPlugin<any>('PushDiag');
+        const diag = await PushDiag.diagnose();
         results.push('\n🔧 NATIVE DIAG (trực tiếp từ iOS):');
         results.push(`isRegisteredBefore: ${diag.isRegisteredBefore}`);
         results.push(`isRegisteredAfter: ${diag.isRegisteredAfter}`);
