@@ -33,21 +33,20 @@ export default function PushDebugButton() {
       }
 
       const { PushNotifications } = await import('@capacitor/push-notifications');
-      const { Capacitor, registerPlugin } = await import('@capacitor/core');
+      const { Capacitor } = await import('@capacitor/core');
       
-      // Step 0: Call NATIVE diagnostic plugin directly
-      try {
-        const PushDiag = registerPlugin<any>('PushDiag');
-        const diag = await PushDiag.diagnose();
-        results.push('\n🔧 NATIVE DIAG (trực tiếp từ iOS):');
-        results.push(`isRegisteredBefore: ${diag.isRegisteredBefore}`);
-        results.push(`isRegisteredAfter: ${diag.isRegisteredAfter}`);
-        results.push(`authStatus: ${diag.authorizationStatus}`);
-        results.push(`bundleId: ${diag.bundleId}`);
-        results.push(`apsEnv: ${diag.apsEnvironment}`);
-        results.push(`pluginLoaded: ${diag.pluginLoaded}`);
-      } catch (e: any) {
-        results.push(`\n⚠️ Native plugin error: ${e.message || e}`);
+      // Step 0: Read native diagnostics injected by AppDelegate
+      const diag = (window as any).__pushDiag;
+      if (diag) {
+        results.push('\n🔧 NATIVE DIAG (từ AppDelegate):');
+        results.push(`isRegistered: ${diag.isRegistered}`);
+        results.push(`token: ${diag.token ? diag.token.substring(0, 20) + '...' : 'CHƯA CÓ'}`);
+        results.push(`error: ${diag.error || 'không'}`);
+        results.push(`launch: ${diag.launch ? 'CÓ' : 'KHÔNG'}`);
+        results.push(`injectedAt: ${diag.injectedAt}`);
+      } else {
+        results.push('\n⚠️ AppDelegate chưa inject dữ liệu');
+        results.push('(Mở app đợi 10s rồi bấm lại)');
       }
       
       // Step 1: Check permissions

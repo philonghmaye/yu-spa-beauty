@@ -99,8 +99,6 @@ jobs:
           cp ios/App/App/AppDelegate.swift /tmp/AppDelegate.swift.bak
           cp ios/App/App/App.entitlements /tmp/App.entitlements.bak
           cp ios/App/App/Info.plist /tmp/Info.plist.bak
-          cp ios/App/App/PushDiagPlugin.swift /tmp/PushDiagPlugin.swift.bak 2>/dev/null || true
-          cp ios/App/App/capacitor.config.json /tmp/capacitor.config.json.bak 2>/dev/null || true
 
       - name: Build web & sync Capacitor
         run: |
@@ -133,24 +131,6 @@ jobs:
             echo "⚠️ Info.plist WAS MODIFIED by cap sync! Restoring..."
             cp /tmp/Info.plist.bak ios/App/App/Info.plist
             echo "✅ Restored original Info.plist"
-          fi
-          
-          # Restore PushDiagPlugin.swift (cap sync doesn't know about this file)
-          if [ -f /tmp/PushDiagPlugin.swift.bak ]; then
-            cp /tmp/PushDiagPlugin.swift.bak ios/App/App/PushDiagPlugin.swift
-            echo "✅ Restored PushDiagPlugin.swift"
-          fi
-          
-          # Restore capacitor.config.json - add PushDiagPlugin to packageClassList
-          if [ -f ios/App/App/capacitor.config.json ]; then
-            if ! grep -q "PushDiagPlugin" ios/App/App/capacitor.config.json; then
-              python3 -c "import json; f=open('ios/App/App/capacitor.config.json','r'); c=json.load(f); f.close(); cl=c.get('packageClassList',[]); cl.append('PushDiagPlugin') if 'PushDiagPlugin' not in cl else None; c['packageClassList']=cl; f=open('ios/App/App/capacitor.config.json','w'); json.dump(c,f,indent='\t'); f.close()"
-              echo "✅ Added PushDiagPlugin to capacitor.config.json"
-            else
-              echo "✅ PushDiagPlugin already in capacitor.config.json"
-            fi
-            echo "=== capacitor.config.json packageClassList ==="
-            grep -A15 "packageClassList" ios/App/App/capacitor.config.json
           fi
           
           echo "=== UIBackgroundModes in FINAL Info.plist ==="
