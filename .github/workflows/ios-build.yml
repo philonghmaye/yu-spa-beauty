@@ -144,15 +144,7 @@ jobs:
           # Restore capacitor.config.json - add PushDiagPlugin to packageClassList
           if [ -f ios/App/App/capacitor.config.json ]; then
             if ! grep -q "PushDiagPlugin" ios/App/App/capacitor.config.json; then
-              python3 -c "
-import json
-with open('ios/App/App/capacitor.config.json', 'r') as f:
-    config = json.load(f)
-if 'PushDiagPlugin' not in config.get('packageClassList', []):
-    config['packageClassList'].append('PushDiagPlugin')
-with open('ios/App/App/capacitor.config.json', 'w') as f:
-    json.dump(config, f, indent='\t')
-"
+              python3 -c "import json; f=open('ios/App/App/capacitor.config.json','r'); c=json.load(f); f.close(); cl=c.get('packageClassList',[]); cl.append('PushDiagPlugin') if 'PushDiagPlugin' not in cl else None; c['packageClassList']=cl; f=open('ios/App/App/capacitor.config.json','w'); json.dump(c,f,indent='\t'); f.close()"
               echo "✅ Added PushDiagPlugin to capacitor.config.json"
             else
               echo "✅ PushDiagPlugin already in capacitor.config.json"
