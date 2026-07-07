@@ -6,14 +6,15 @@ import Capacitor
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    private var webViewRef: WKWebView?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         UserDefaults.standard.set("launched_\(Date())", forKey: "push_diag_launch")
         
-        // Try injection at 5s, 10s, 20s
-        for delay in [5.0, 10.0, 20.0] {
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                self.injectDiagnostics()
+        // Try injection at 3s, 8s, 15s, 25s
+        for delay in [3.0, 8.0, 15.0, 25.0] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                self?.injectDiagnostics()
             }
         }
         return true
@@ -43,6 +44,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     // MARK: - Diagnostics
+    private func getWebView() -> WKWebView? {
+        if let wv = webViewRef { return wv }
+        
+        // Method 1: CAPBridgeViewController
+        if let bridgeVC = window?.rootViewController as? CAPBridgeViewController,
+           let wv = bridgeVC.bridge?.webView {
+            webViewRef = wv
+            return wv
+        }
+        
+        // Method 2: Recursive search
+        if let rootView = window?.rootViewController?.view,
+           let wv = findWebView(in: rootView) {
+            webViewRef = wv
+            return wv
+        }
+        
+        // Method 3: Search all windows
+        for w in UIApplication.shared.windows {
+            if let wv = findWebView(in: w) {
+                webViewRef = wv
+                return wv
+            }
+        }
+        
+        return nil
+    }
+    
     private func injectDiagnostics() {
         let token = UserDefaults.standard.string(forKey: "push_diag_token") ?? ""
         let error = UserDefaults.standard.string(forKey: "push_diag_error") ?? ""
@@ -52,18 +81,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let safeError = error.replacingOccurrences(of: "'", with: "\\'").replacingOccurrences(of: "\n", with: " ")
         let safeLaunch = launch.replacingOccurrences(of: "'", with: "\\'")
         
-        let js = "window.__pushDiag = { token: '\(token)', error: '\(safeError)', launch: '\(safeLaunch)', isRegistered: \(isReg), injectedAt: '\(Date())' };"
+        // Use localStorage instead of window variable (survives navigation)
+        let json = "{ \"token\": \"\(token)\", \"error\": \"\(safeError)\", \"launch\": \"\(safeLaunch)\", \"isRegistered\": \(isReg), \"injectedAt\": \"\(Date())\" }"
+        let js = "try { localStorage.setItem('__pushDiag', '\(json.replacingOccurrences(of: "'", with: "\\'"))'); } catch(e) {}"
         
-        // Method 1: CAPBridgeViewController (official Capacitor way)
-        if let bridgeVC = window?.rootViewController as? CAPBridgeViewController {
-            bridgeVC.bridge?.webView?.evaluateJavaScript(js, completionHandler: nil)
-            return
-        }
-        
-        // Method 2: Recursive WKWebView search
-        if let rootView = window?.rootViewController?.view,
-           let webView = findWebView(in: rootView) {
-            webView.evaluateJavaScript(js, completionHandler: nil)
+        if let wv = getWebView() {
+            wv.evaluateJavaScript(js, completionHandler: nil)
         }
     }
     

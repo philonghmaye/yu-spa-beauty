@@ -35,8 +35,13 @@ export default function PushDebugButton() {
       const { PushNotifications } = await import('@capacitor/push-notifications');
       const { Capacitor } = await import('@capacitor/core');
       
-      // Step 0: Read native diagnostics injected by AppDelegate
-      const diag = (window as any).__pushDiag;
+      // Step 0: Read native diagnostics from localStorage (injected by AppDelegate)
+      let diag: any = null;
+      try {
+        const raw = localStorage.getItem('__pushDiag');
+        if (raw) diag = JSON.parse(raw);
+      } catch {}
+      
       if (diag) {
         results.push('\n🔧 NATIVE DIAG (từ AppDelegate):');
         results.push(`isRegistered: ${diag.isRegistered}`);
@@ -46,7 +51,7 @@ export default function PushDebugButton() {
         results.push(`injectedAt: ${diag.injectedAt}`);
       } else {
         results.push('\n⚠️ AppDelegate chưa inject dữ liệu');
-        results.push('(Mở app đợi 10s rồi bấm lại)');
+        results.push('(Đợi 30s rồi bấm lại)');
       }
       
       // Step 1: Check permissions
