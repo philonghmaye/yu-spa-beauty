@@ -35,23 +35,31 @@ export default function PushDebugButton() {
       const { PushNotifications } = await import('@capacitor/push-notifications');
       const { Capacitor } = await import('@capacitor/core');
       
-      // Step 0: Read native diagnostics from localStorage (injected by AppDelegate)
-      let diag: any = null;
+      // Step 0: Read native diagnostics from SERVER (sent by AppDelegate via HTTP)
       try {
-        const raw = localStorage.getItem('__pushDiag');
-        if (raw) diag = JSON.parse(raw);
-      } catch {}
-      
-      if (diag) {
-        results.push('\n🔧 NATIVE DIAG (từ AppDelegate):');
-        results.push(`isRegistered: ${diag.isRegistered}`);
-        results.push(`token: ${diag.token ? diag.token.substring(0, 20) + '...' : 'CHƯA CÓ'}`);
-        results.push(`error: ${diag.error || 'không'}`);
-        results.push(`launch: ${diag.launch ? 'CÓ' : 'KHÔNG'}`);
-        results.push(`injectedAt: ${diag.injectedAt}`);
-      } else {
-        results.push('\n⚠️ AppDelegate chưa inject dữ liệu');
-        results.push('(Đợi 30s rồi bấm lại)');
+        const diagRes = await fetch('/api/push-diag');
+        const diagData = await diagRes.json();
+        if (diagData.latest) {
+          const d = diagData.latest;
+          results.push('\n🔧 NATIVE DIAG (từ server):');
+          results.push(`status: ${d.status}`);
+          results.push(`detail: ${d.detail}`);
+          results.push(`isRegistered: ${d.isRegistered}`);
+          results.push(`token: ${d.token || 'CHƯA CÓ'}`);
+          results.push(`build: ${d.buildVersion}`);
+          results.push(`time: ${d.timestamp}`);
+          if (diagData.log?.length > 1) {
+            results.push(`\n📋 Lịch sử (${diagData.log.length} events):`);
+            diagData.log.slice(-5).forEach((e: any) => {
+              results.push(`  ${e.status}: ${e.detail}`);
+            });
+          }
+        } else {
+          results.push('\n⚠️ Chưa có dữ liệu từ native');
+          results.push('(Mở app đợi 30s để AppDelegate gửi data)');
+        }
+      } catch (e: any) {
+        results.push(`\n⚠️ Lỗi đọc diag: ${e.message}`);
       }
       
       // Step 1: Check permissions
