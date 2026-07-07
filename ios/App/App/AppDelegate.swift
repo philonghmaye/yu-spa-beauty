@@ -1,5 +1,9 @@
 import UIKit
+import UserNotifications
 import Capacitor
+
+// MARKER: This string MUST appear in the compiled binary
+private let PUSH_DIAG_MARKER = "YURISPA_PUSHDIAG_V32_ACTIVE"
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -8,24 +12,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
+        // Log marker to prove this code executes
+        NSLog("🚀 %@", PUSH_DIAG_MARKER)
+        
         // Register for push notifications directly from AppDelegate
-        // This bypasses the Capacitor plugin entirely
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
-            DispatchQueue.main.async {
-                if granted {
+            NSLog("🔔 Push auth result: granted=%d error=%@", granted ? 1 : 0, error?.localizedDescription ?? "none")
+            
+            self.sendDiagToServer(status: granted ? "AUTH_GRANTED" : "AUTH_DENIED", detail: error?.localizedDescription ?? "none", token: "")
+            
+            if granted {
+                DispatchQueue.main.async {
+                    NSLog("🔔 Calling registerForRemoteNotifications...")
                     UIApplication.shared.registerForRemoteNotifications()
-                    // Set timeout - if no response in 30s, report to server
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 30.0) {
-                        if !UIApplication.shared.isRegisteredForRemoteNotifications {
-                            self.sendDiagToServer(status: "TIMEOUT", detail: "30s no response from Apple", token: "")
-                        }
-                    }
                 }
-                self.sendDiagToServer(
-                    status: granted ? "AUTH_GRANTED" : "AUTH_DENIED",
-                    detail: error?.localizedDescription ?? "none",
-                    token: ""
-                )
+                
+                // Timeout check after 30s
+                DispatchQueue.main.asyncAfter(deadline: .now() + 30.0) {
+                    let isReg = UIApplication.shared.isRegisteredForRemoteNotifications
+                    NSLog("🔔 30s check: isRegistered=%d", isReg ? 1 : 0)
+                    self.sendDiagToServer(status: "TIMEOUT_CHECK", detail: "isRegistered=\(isReg)", token: "")
+                }
             }
         }
         
@@ -34,11 +41,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let token = deviceToken.map { String(format: "%02x", $0) }.joined()
+        NSLog("🔔 ✅ Got push token: %@", token.prefix(20) + "...")
         sendDiagToServer(status: "TOKEN_RECEIVED", detail: "success", token: token)
         NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        NSLog("🔔 ❌ Push registration failed: %@", error.localizedDescription)
         sendDiagToServer(status: "REGISTRATION_FAILED", detail: error.localizedDescription, token: "")
         NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
     }
@@ -53,11 +62,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     // MARK: - Send diagnostic data to server via HTTP
     private func sendDiagToServer(status: String, detail: String, token: String) {
-        guard let url = URL(string: "https://yuri-spa-beauty.vercel.app/api/push-diag") else { return }
+        let urlString = "https://yuri-spa-beauty.vercel.app/api/push-diag"
+        guard let url = URL(string: urlString) else {
+            NSLog("🔔 ❌ Invalid URL: %@", urlString)
+            return
+        }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 15
         
         let isReg = UIApplication.shared.isRegisteredForRemoteNotifications
         let body: [String: Any] = [
@@ -67,15 +81,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             "isRegistered": isReg,
             "bundleId": Bundle.main.bundleIdentifier ?? "unknown",
             "timestamp": ISO8601DateFormatter().string(from: Date()),
-            "buildVersion": Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "unknown"
+            "buildVersion": Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "unknown",
+            "marker": PUSH_DIAG_MARKER
         ]
         
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         
-        URLSession.shared.dataTask(with: request) { _, _, _ in
-            // Fire and forget
+        NSLog("🔔 Sending diag to server: status=%@ detail=%@", status, detail)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                NSLog("🔔 ❌ HTTP error: %@", error.localizedDescription)
+            } else if let httpResponse = response as? HTTPURLResponse {
+                NSLog("🔔 ✅ HTTP response: %d", httpResponse.statusCode)
+            }
         }.resume()
     }
 }
-
-import UserNotifications
