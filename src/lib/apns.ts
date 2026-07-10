@@ -216,9 +216,17 @@ export async function sendPushToAdmins(
       where: { userId: { in: adminIds } },
     });
 
-    if (tokens.length === 0) {
-      console.log('No admin push tokens found');
-      return;
+    // Fallback: nếu PushToken table trống, thử đọc từ Setting (token từ native AppDelegate)
+    let tokenList = tokens.map(t => t.token);
+    if (tokenList.length === 0) {
+      const nativeToken = await prisma.setting.findUnique({ where: { key: 'apns_device_token' } });
+      if (nativeToken?.value) {
+        console.log('Using native token from Setting table as fallback');
+        tokenList = [nativeToken.value];
+      } else {
+        console.log('No admin push tokens found');
+        return;
+      }
     }
 
     // Đếm số đơn chờ xác nhận để cập nhật badge trên icon app
@@ -228,11 +236,11 @@ export async function sendPushToAdmins(
 
     // Gửi push đến tất cả devices (parallel)
     const results = await Promise.allSettled(
-      tokens.map((t) => sendPushToDevice(t.token, title, body, pendingCount, data))
+      tokenList.map((t) => sendPushToDevice(t, title, body, pendingCount, data))
     );
 
     const sent = results.filter((r) => r.status === 'fulfilled' && r.value).length;
-    console.log(`Push notification sent to ${sent}/${tokens.length} admin devices`);
+    console.log(`Push notification sent to ${sent}/${tokenList.length} admin devices`);
   } catch (error) {
     console.error('Failed to send push to admins:', error);
   }
