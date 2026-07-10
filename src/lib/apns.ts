@@ -186,23 +186,31 @@ export async function sendPushToAdmins(
 
     const adminIds = adminUsers.map((u) => u.id);
 
-    // Lấy tất cả push tokens của admin
+    // Lấy push tokens từ PushToken table
     const tokens = await prisma.pushToken.findMany({
       where: { userId: { in: adminIds } },
     });
 
-    // Fallback: nếu PushToken table trống, thử đọc từ Setting (token từ native AppDelegate)
-    let tokenList = tokens.map(t => t.token);
-    if (tokenList.length === 0) {
-      const nativeToken = await prisma.setting.findUnique({ where: { key: 'apns_device_token' } });
-      if (nativeToken?.value) {
-        console.log('Using native token from Setting table as fallback');
-        tokenList = [nativeToken.value];
-      } else {
-        console.log('No admin push tokens found');
-        return;
-      }
+    // Luôn lấy token mới nhất từ Setting (native AppDelegate - nguồn đáng tin nhất)
+    const nativeToken = await prisma.setting.findUnique({ where: { key: 'apns_device_token' } });
+    
+    // Gộp tokens, ưu tiên native token (mới nhất), dedup case-insensitive
+    const allTokens = new Set<string>();
+    // Native token đầu tiên (tin cậy nhất)
+    if (nativeToken?.value) {
+      allTokens.add(nativeToken.value.toLowerCase());
     }
+    // Thêm từ PushToken table
+    for (const t of tokens) {
+      allTokens.add(t.token.toLowerCase());
+    }
+
+    const tokenList = Array.from(allTokens);
+    if (tokenList.length === 0) {
+      console.log('No admin push tokens found');
+      return;
+    }
+    console.log(`Found ${tokenList.length} unique token(s) for push`);
 
     // Đếm số đơn chờ xác nhận để cập nhật badge trên icon app
     const pendingCount = await prisma.appointment.count({
