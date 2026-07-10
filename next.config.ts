@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
   },
   compress: true,
   poweredByHeader: false,
+  // Optimize large packages - tree-shake react-icons
+  experimental: {
+    optimizePackageImports: ['react-icons', 'date-fns'],
+  },
   async headers() {
     return [
       {
@@ -19,6 +23,19 @@ const nextConfig: NextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
+        ],
+      },
+      // Aggressive caching for static assets
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        source: '/icons/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400' },
         ],
       },
     ];

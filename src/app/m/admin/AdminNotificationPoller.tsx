@@ -31,6 +31,9 @@ export default function AdminNotificationPoller() {
     retrySavePushToken();
 
     const checkNewBookings = async () => {
+      // Không poll khi app đang ở background
+      if (document.hidden) return;
+
       try {
         // Lấy số đơn chờ xác nhận (PENDING) cho badge
         const [pendingRes, notiRes] = await Promise.all([
@@ -118,13 +121,22 @@ export default function AdminNotificationPoller() {
     // Kiểm tra ngay lập tức
     checkNewBookings();
 
-    // Polling mỗi 3 giây để thông báo tức thì
-    intervalRef.current = setInterval(checkNewBookings, 3000);
+    // Polling mỗi 30 giây (push notification xử lý realtime)
+    intervalRef.current = setInterval(checkNewBookings, 30000);
+
+    // Khi app trở lại foreground → check ngay
+    const handleVisibility = () => {
+      if (!document.hidden) {
+        checkNewBookings();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
 
