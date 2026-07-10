@@ -25,38 +25,13 @@ async function createAPNsJWT(): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const payload = Buffer.from(JSON.stringify({ iss: teamId, iat: now })).toString('base64url');
 
-  // Sign
+  // Sign with ieee-p1363 encoding (raw r||s format, no DER parsing needed)
   const signInput = `${header}.${payload}`;
   const key = crypto.createPrivateKey(privateKey.replace(/\\n/g, '\n'));
   const sign = crypto.createSign('SHA256');
   sign.update(signInput);
-  const signature = sign.sign(key);
-
-  // Convert DER signature to raw r||s format for ES256
-  const derToRaw = (der: Buffer): Buffer => {
-    // DER: 30 <len> 02 <rLen> <r> 02 <sLen> <s>
-    let offset = 2; // skip 30 <len>
-    offset += 1; // skip 02
-    const rLen = der[offset];
-    offset += 1;
-    const r = der.subarray(offset, offset + rLen);
-    offset += rLen;
-    offset += 1; // skip 02
-    const sLen = der[offset];
-    offset += 1;
-    const s = der.subarray(offset, offset + sLen);
-
-    // Pad to 32 bytes each
-    const rPad = Buffer.alloc(32);
-    const sPad = Buffer.alloc(32);
-    r.copy(rPad, 32 - r.length);
-    s.copy(sPad, 32 - s.length);
-
-    return Buffer.concat([rPad, sPad]);
-  };
-
-  const rawSig = derToRaw(signature);
-  const sig64 = rawSig.toString('base64url');
+  const signature = sign.sign({ key, dsaEncoding: 'ieee-p1363' });
+  const sig64 = signature.toString('base64url');
 
   return `${signInput}.${sig64}`;
 }

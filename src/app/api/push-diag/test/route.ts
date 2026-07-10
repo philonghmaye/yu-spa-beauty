@@ -38,25 +38,8 @@ export async function POST() {
     const key = crypto.createPrivateKey(privateKey);
     const sign = crypto.createSign('SHA256');
     sign.update(signInput);
-    const signature = sign.sign(key);
-
-    // DER to raw ES256
-    let offset = 2;
-    offset += 1;
-    const rLen = signature[offset];
-    offset += 1;
-    const r = signature.subarray(offset, offset + rLen);
-    offset += rLen;
-    offset += 1;
-    const sLen = signature[offset];
-    offset += 1;
-    const s = signature.subarray(offset, offset + sLen);
-    const rPad = Buffer.alloc(32);
-    const sPad = Buffer.alloc(32);
-    r.copy(rPad, 32 - r.length);
-    s.copy(sPad, 32 - s.length);
-    const rawSig = Buffer.concat([rPad, sPad]);
-    const jwt = `${signInput}.${rawSig.toString('base64url')}`;
+    const signature = sign.sign({ key, dsaEncoding: 'ieee-p1363' });
+    const jwt = `${signInput}.${signature.toString('base64url')}`;
 
     // APNs payload
     const apnsPayload = JSON.stringify({
