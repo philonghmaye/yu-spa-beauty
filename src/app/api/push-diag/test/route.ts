@@ -7,18 +7,14 @@ import prisma from '@/lib/prisma';
  */
 export async function POST() {
   try {
-    // Get token from push-diag data
-    const diagLatest = await prisma.setting.findUnique({ where: { key: 'push_diag_latest' } });
-    if (!diagLatest) {
-      return NextResponse.json({ error: 'No diagnostic data found' }, { status: 404 });
+    // Get token from apns_device_token (saved by TOKEN_RECEIVED event)
+    const tokenSetting = await prisma.setting.findUnique({ where: { key: 'apns_device_token' } });
+    
+    if (!tokenSetting?.value) {
+      return NextResponse.json({ error: 'No device token found. Open the app first.' }, { status: 404 });
     }
     
-    const diag = JSON.parse(diagLatest.value);
-    const fullToken = diag.fullToken;
-    
-    if (!fullToken) {
-      return NextResponse.json({ error: 'No token in diagnostic data' }, { status: 404 });
-    }
+    const fullToken = tokenSetting.value;
 
     // Get APNs config
     const keyId = process.env.APNS_KEY_ID;
