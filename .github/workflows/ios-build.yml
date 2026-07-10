@@ -201,32 +201,20 @@ jobs:
           echo "=== Provisioning profile in .app ==="
           security cms -D -i "$RUNNER_TEMP/App.xcarchive/Products/Applications/App.app/embedded.mobileprovision" 2>/dev/null | grep -A3 "aps-environment" || echo "No aps-environment in embedded profile"
           echo ""
-          echo "=== BINARY STRING CHECK: Is our custom code compiled? ==="
+          echo "=== BINARY CHECK: Custom AppDelegate compiled? ==="
           BINARY="$RUNNER_TEMP/App.xcarchive/Products/Applications/App.app/App"
           echo "Binary size: $(wc -c < $BINARY) bytes"
-          echo ""
-          echo "Checking for V32 markers..."
-          strings $BINARY | grep "YURISPA_PUSHDIAG" && echo "✅ FOUND: PUSH DIAG MARKER" || echo "❌ NOT FOUND: PUSH DIAG MARKER"
-          strings $BINARY | grep "push-diag" && echo "✅ FOUND: push-diag URL" || echo "❌ NOT FOUND: push-diag URL"
-          strings $BINARY | grep "sendDiagToServer" && echo "✅ FOUND: sendDiagToServer" || echo "❌ NOT FOUND: sendDiagToServer"
-          strings $BINARY | grep "registerForRemoteNotifications" && echo "✅ FOUND: registerForRemoteNotifications" || echo "❌ NOT FOUND: registerForRemoteNotifications"
-          strings $BINARY | grep "push_diag_" && echo "✅ FOUND: push_diag_ keys" || echo "❌ NOT FOUND: push_diag_ keys"
-          echo ""
-          echo "=== ALL AppDelegate/Scene classes in binary ==="
-          strings $BINARY | grep -iE "(AppDelegate|SceneDelegate|_TtC3App)" | head -20
-          echo ""
-          echo "=== Verify marker is present (FAIL if not) ==="
-          if ! strings $BINARY | grep -q "YURISPA_PUSHDIAG"; then
-            echo "🚨🚨🚨 CRITICAL: Our AppDelegate code was NOT compiled into the binary!"
-            echo "🚨 The binary does not contain our marker string."
-            echo "🚨 cap sync likely overwrote our AppDelegate!"
+          strings $BINARY | grep "push-diag" && echo "✅ push-diag URL found" || echo "❌ push-diag URL NOT found"
+          strings $BINARY | grep "registerForRemoteNotifications" && echo "✅ registerForRemoteNotifications found" || echo "❌ NOT found"
+          if ! strings $BINARY | grep -q "push-diag"; then
+            echo "🚨 AppDelegate code not compiled!"
             exit 1
           fi
-          echo "✅ AppDelegate custom code verified in binary"
+          echo "✅ AppDelegate verified"
           echo ""
-          echo "=== Check Info.plist in archive for SceneManifest ==="
+          echo "=== Check Info.plist for SceneManifest ==="
           ARCHIVED_PLIST="$RUNNER_TEMP/App.xcarchive/Products/Applications/App.app/Info.plist"
-          plutil -p "$ARCHIVED_PLIST" | grep -i "scene" && echo "⚠️ SCENE CONFIG IN ARCHIVED PLIST!" || echo "✅ No scene config in archived plist"
+          plutil -p "$ARCHIVED_PLIST" | grep -i "scene" && echo "⚠️ SCENE CONFIG!" || echo "✅ No scene config"
 
       - name: Export IPA
         env:

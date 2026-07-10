@@ -5,7 +5,7 @@ import { formatCurrency, getVietnamToday, getVietnamNow, getStatusLabel } from '
 import Link from 'next/link';
 import { FiCalendar, FiUsers, FiClock, FiChevronRight, FiHome } from 'react-icons/fi';
 import AdminNotificationBell from '../AdminNotificationBell';
-import PushDebugButton from './PushDebugButton';
+
 
 async function getStats() {
   const today = getVietnamToday();
@@ -126,7 +126,7 @@ export default async function AdminMobileDashboard() {
             👥 Nhân viên ({stats.activeStaff})
           </Link>
         </div>
-        <PushDebugButton />
+
       </div>
 
       {/* Today's Appointments */}
