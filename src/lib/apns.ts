@@ -96,7 +96,7 @@ async function sendPushToDevice(
   try {
     const jwt = await getAPNsToken();
 
-    const payload = {
+    const payload = JSON.stringify({
       aps: {
         alert: { title, body },
         sound: 'default',
@@ -104,27 +104,60 @@ async function sendPushToDevice(
         'mutable-content': 1,
       },
       ...data,
-    };
+    });
 
-    const sendToHost = async (host: string) => {
-      const response = await fetch(`${host}/3/device/${deviceToken}`, {
-        method: 'POST',
-        headers: {
+    const sendToHost = async (host: string): Promise<{ ok: boolean; status?: number; error?: any }> => {
+      const http2 = await import('http2');
+      const hostname = host.replace('https://', '');
+      
+      return new Promise((resolve) => {
+        const client = http2.connect(`https://${hostname}`);
+        
+        client.on('error', (err) => {
+          client.close();
+          resolve({ ok: false, error: { reason: err.message } });
+        });
+
+        const req = client.request({
+          ':method': 'POST',
+          ':path': `/3/device/${deviceToken}`,
           'authorization': `bearer ${jwt}`,
           'apns-topic': bundleId,
           'apns-push-type': 'alert',
           'apns-priority': '10',
-          'apns-expiration': '0',
           'content-type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+          'content-length': Buffer.byteLength(payload),
+        });
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        return { ok: false, status: response.status, error };
-      }
-      return { ok: true };
+        let data = '';
+        let status = 0;
+
+        req.on('response', (headers) => {
+          status = headers[':status'] as number;
+        });
+
+        req.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        req.on('end', () => {
+          client.close();
+          if (status === 200) {
+            resolve({ ok: true });
+          } else {
+            const error = data ? JSON.parse(data) : {};
+            resolve({ ok: false, status, error });
+          }
+        });
+
+        req.on('error', (err) => {
+          client.close();
+          resolve({ ok: false, error: { reason: err.message } });
+        });
+
+        req.write(payload);
+        req.end();
+      });
     };
 
     let result = await sendToHost(primaryHost);
