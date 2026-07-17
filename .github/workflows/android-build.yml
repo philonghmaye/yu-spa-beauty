@@ -26,11 +26,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create webDir for Capacitor
+        run: mkdir -p out && echo '<html><body>Loading...</body></html>' > out/index.html
+
       - name: Sync Capacitor
         run: npx cap sync android
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
+
+      - name: Generate release keystore
+        run: |
+          keytool -genkey -v \
+            -keystore android/yurispa-release.keystore \
+            -alias yurispa \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass yurispa2026 -keypass yurispa2026 \
+            -dname "CN=Yuri Spa Beauty, OU=Mobile, O=Yuri Spa, L=Ha Tien, ST=Kien Giang, C=VN"
 
       - name: Build Release AAB (for Google Play)
         working-directory: android
