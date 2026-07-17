@@ -50,4 +50,10 @@ next-env.d.ts
 .gemini/
 .vercel
 
+# Android
+*.keystore
+*.jks
+android/app/build/
+android/.gradle/
+
 .vercel

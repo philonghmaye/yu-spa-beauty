@@ -32,6 +32,10 @@ const config: CapacitorConfig = {
     preferredContentMode: 'mobile',
     scheme: 'yurispa',
   },
+  android: {
+    backgroundColor: '#FFFDF7',
+    allowMixedContent: false,
+  },
 };
 
 export default config;
