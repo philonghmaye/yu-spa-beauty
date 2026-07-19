@@ -20,17 +20,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Create webDir for Capacitor
-        run: mkdir -p out && echo '<html><body>Loading...</body></html>' > out/index.html
-
-      - name: Sync Capacitor
-        run: npx cap sync android
+      - name: Copy web assets (lightweight)
+        run: |
+          mkdir -p out
+          echo '<html><body>Loading...</body></html>' > out/index.html
+          npx cap copy android
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
